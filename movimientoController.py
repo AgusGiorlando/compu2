@@ -26,7 +26,7 @@ class MovimientoController:
     Devuelve un mensaje al lector sobre el estado de la operacion
     """
 
-    def agregarMovimiento(self, dni, clave, tipo):
+    def agregarMovimiento(self, dni, clave, tipo, time):
         # SELECT de Empleado
         resultado = empleadoController.buscarPorDni(dni)
         if type(resultado) == str:
@@ -38,11 +38,9 @@ class MovimientoController:
         if str(clave_empleado) != str(clave):
             return 'La clave ingresada es incorrecta'
 
-        # GET de Fecha y Hora
-        # TODO: Pasar a lector
-        now = datetime.now()
-        fecha = now.date()
-        hora = now.time()
+        # Fecha y Hora
+        fecha = str(time[0]) + '/' + str(time[1])
+        hora = str(time[2]) + ':' + str(time[1])
 
         # INSERT movimiento
         if movimiento.insert(id_empleado, tipo, fecha, hora) != True:
