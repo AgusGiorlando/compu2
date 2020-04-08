@@ -2,7 +2,7 @@
 import logging
 import os
 import socket
-import json
+import pickle
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,
@@ -10,7 +10,8 @@ logging.basicConfig(level=logging.INFO,
 
 # Declaracion de variables
 SERVER_IP = 'localhost'
-VISOR_PORT = 5000
+SERVER_PORT = 5000
+CLOCK_PORT = 5001
 
 
 def main():
@@ -18,7 +19,7 @@ def main():
     while True:
         # Conexion con el server
         desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-        desc.connect((SERVER_IP, VISOR_PORT))
+        desc.connect((SERVER_IP, SERVER_PORT))
 
         # Menu y generacion de la peticion
         peticion = menu()
@@ -33,8 +34,8 @@ def main():
         print(peticion)
 
         # Formatea y envia la Peticion
-        json_peticion = json.dumps(peticion)
-        desc.send(json_peticion+"\n")
+        response = pickle.dumps(peticion)
+        desc.send(response)
 
         # Muestra la respuesta recibida
         leido = desc.recv(2048)
@@ -83,7 +84,15 @@ def setPeticion(tipo):
     print("Ingrese su clave: ")
     clave = input()
 
-    return (dni, clave, tipo)
+    # Solicitud al clock de horario
+    clockConnection = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+    clockConnection.connect((SERVER_IP, CLOCK_PORT))
+    clockConnection.send(str(1))
+    response = clockConnection.recv(2048)
+    time = pickle.loads(response)
+    clockConnection.close()
+
+    return (dni, clave, tipo, time)
 
 
 if __name__ == "__main__":
