@@ -12,6 +12,20 @@ logging.basicConfig(level=logging.INFO,
 SERVER_IP = 'localhost'
 SERVER_PORT = 5000
 CLOCK_PORT = 5001
+LOGGER_PORT = 5003
+
+
+def sendLog(nivel, accion):
+    # Generacion del mensaje
+    msg = (os.getppid(), 'Visor', nivel, accion)
+    msg = pickle.dumps(msg)
+
+    # Envio
+    loggerConnection = socket.socket(
+        family=socket.AF_INET, type=socket.SOCK_STREAM)
+    loggerConnection.connect((SERVER_IP, LOGGER_PORT))
+    loggerConnection.send(msg)
+    loggerConnection.close()
 
 
 def main():
@@ -30,17 +44,15 @@ def main():
             desc.close()
             break
 
-        #TODO: eliminar
-        print(peticion)
-
         # Formatea y envia la Peticion
         response = pickle.dumps(peticion)
         desc.send(response)
+        sendLog('info', 'Envio de peticion')
 
         # Muestra la respuesta recibida
         leido = desc.recv(2048)
         print(leido)
-
+        sendLog('info', 'Respuesta recibida')
         # Termina la conexion
         desc.close()
     print("Hasta luego")
@@ -84,14 +96,15 @@ def setPeticion(tipo):
     print("Ingrese su clave: ")
     clave = input()
 
+
     # Solicitud al clock de horario
-    clockConnection = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+    clockConnection = socket.socket(
+        family=socket.AF_INET, type=socket.SOCK_STREAM)
     clockConnection.connect((SERVER_IP, CLOCK_PORT))
     clockConnection.send(str(1))
     response = clockConnection.recv(2048)
     time = pickle.loads(response)
     clockConnection.close()
-
     return (dni, clave, tipo, time)
 
 

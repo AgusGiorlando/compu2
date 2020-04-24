@@ -40,7 +40,7 @@ class MovimientoController:
 
         # Fecha y Hora
         fecha = str(time[0]) + '/' + str(time[1])
-        hora = str(time[2]) + ':' + str(time[1])
+        hora = str(time[2]) + ':' + str(time[3])
 
         # INSERT movimiento
         if movimiento.insert(id_empleado, tipo, fecha, hora) != True:
