@@ -1,0 +1,3 @@
+[INFO] (Visor - 4583) - 1/1-5:20 - clock->getTime()
+[INFO] (Visor - 4583) - 1/2-8:30 - Envio de peticion
+[INFO] (Visor - 4583) - 1/2-8:30 - Respuesta recibida
