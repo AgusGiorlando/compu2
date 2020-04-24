@@ -32,23 +32,12 @@ class Logger:
         while True:
             clientSocket, cli = desc.accept()
             logging.info(cli)
-            leido = clientSocket.recv(2048)
-            leido = pickle.loads(leido)
-            
+            msg = clientSocket.recv(2048)
+            msg = pickle.loads(msg)
+
             time = self.getTime()
-            fecha = str(time[0]) + '/' + str(time[1])
-            hora = str(time[2]) + ':' + str(time[3])
-            log = str.format('[{0}] ({1} - {2}) - {3}-{4} - {5}\n',
-                             str.upper(leido[2]),
-                             leido[1],
-                             leido[0],
-                             fecha,
-                             hora,
-                             leido[3]
-                             )
-            file = open('logs/log.txt', 'a')
-            file.write(log)
-            file.close()
+            self.writeLog(msg, time)
+
 
     def getTime(self, ):
         # Solicitud al clock de horario
@@ -60,3 +49,18 @@ class Logger:
         time = pickle.loads(response)
         clockConnection.close()
         return time
+
+    def writeLog(self, msg, time):
+        fecha = str(time[0]) + '/' + str(time[1])
+        hora = str(time[2]) + ':' + str(time[3])
+        log = str.format('[{0}] ({1} - {2}) - {3}-{4} - {5}\n',
+                         str.upper(msg[2]),
+                         msg[1],
+                         msg[0],
+                         fecha,
+                         hora,
+                         msg[3]
+                         )
+        file = open('logs/log.txt', 'a')
+        file.write(log)
+        file.close()
