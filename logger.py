@@ -7,6 +7,7 @@ import logging
 import socket
 import threading
 import pickle
+import multiprocessing
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
@@ -17,10 +18,14 @@ NUM_VISORES = 100  # TODO: Poner infinito vs parametro
 SERVER_IP = 'localhost'
 LOGGER_PORT = 5003
 CLOCK_PORT = 5001
+queue = multiprocessing.Queue()
 
 
 class Logger:
     def connect(self,):
+        # Writer
+        writer = multiprocessing.Process(target=self.writerProc, args=())
+        writer.start()
         # Nuevo Socket
         desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
         # para que no diga address already in use ...
@@ -36,8 +41,8 @@ class Logger:
             msg = pickle.loads(msg)
 
             time = self.getTime()
-            self.writeLog(msg, time)
-
+            #self.writeLog(msg, time)
+            queue.put([msg, time])
 
     def getTime(self, ):
         # Solicitud al clock de horario
@@ -49,18 +54,22 @@ class Logger:
         time = pickle.loads(response)
         clockConnection.close()
         return time
-
-    def writeLog(self, msg, time):
-        fecha = str(time[0]) + '/' + str(time[1])
-        hora = str(time[2]) + ':' + str(time[3])
-        log = str.format('[{0}] ({1} - {2}) - {3}-{4} - {5}\n',
-                         str.upper(msg[2]),
-                         msg[1],
-                         msg[0],
-                         fecha,
-                         hora,
-                         msg[3]
-                         )
-        file = open('logs/log.txt', 'a')
-        file.write(log)
-        file.close()
+            
+    def writerProc(self,):
+        while True:
+            newLog = queue.get()
+            msg = newLog[0]
+            time = newLog[1]
+            fecha = str(time[0]) + '/' + str(time[1])
+            hora = str(time[2]) + ':' + str(time[3])
+            log = str.format('[{0}] ({1} - {2}) - {3}-{4} - {5}\n',
+                             str.upper(msg[2]),
+                             msg[1],
+                             msg[0],
+                             fecha,
+                             hora,
+                             msg[3]
+                             )
+            file = open('logs/log.txt', 'a')
+            file.write(log)
+            file.close()
