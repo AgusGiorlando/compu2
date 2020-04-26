@@ -19,16 +19,28 @@ cursor = db.cursor()
 
 
 class Movimiento:
-    """
-    Agrega un movimento en la DB
-    Recibe id_empleado, tipo, fecha, hora
-    Devuelve True si fue realizado con exito
-    """
     def insert(self, id_empleado, tipo, fecha, hora):
+        """
+        Agrega un movimento en la DB
+        Recibe id_empleado, tipo, fecha, hora
+        Devuelve True si fue realizado con exito
+        """
         query = 'INSERT INTO movimientos (empleado_id, tipo, fecha, hora) VALUES (%s, %s, %s, %s)'
         values = (id_empleado, tipo, fecha, hora)
         cursor.execute(query, values)
         db.commit()
         logging.info(str(cursor.rowcount) + " Movimiento registrado")
         return True
+        # TODO: Manejo de excepciones
+
+    def selectAll(self,):
+        """
+        Devuelve todos los movimientos en la DB
+        """
+        query = 'SELECT * FROM movimientos'
+        cursor.execute(query)
+        movimientos = cursor.fetchall()
+        db.commit()
+        logging.info(str(cursor.rowcount) + " Movimientos encontrados")
+        return movimientos
         # TODO: Manejo de excepciones

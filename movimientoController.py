@@ -18,15 +18,15 @@ empleadoController = EmpleadoController()
 
 class MovimientoController:
 
-    """
-    Recibe dni, clave y tipo de movimiento
-    Busca al empleado correspondiente al dni, valida que la clave sea correcta
-    Setea fecha y hora del movimiento
-    Inserta en DB el movimiento
-    Devuelve un mensaje al lector sobre el estado de la operacion
-    """
-
     def agregarMovimiento(self, dni, clave, tipo, time):
+        """
+        Recibe dni, clave y tipo de movimiento
+        Busca al empleado correspondiente al dni, valida que la clave sea correcta
+        Setea fecha y hora del movimiento
+        Inserta en DB el movimiento
+        Devuelve un mensaje al lector sobre el estado de la operacion
+        """
+
         # SELECT de Empleado
         resultado = empleadoController.buscarPorDni(dni)
         if type(resultado) == str:
@@ -48,3 +48,14 @@ class MovimientoController:
             return 'No se pudo registrar el movimiento'
 
         return 'Movimiento registrado correctamente'
+
+    def getMovimientos(self, ):
+        """
+        Devuelve todos los movimientos
+        """
+        try:
+            # SELECT
+            movimientos = movimiento.selectAll()
+            return movimientos
+        except Exception as ex:
+            print(ex)

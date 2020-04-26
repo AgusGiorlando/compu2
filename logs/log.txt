@@ -1,3 +1,17 @@
-[INFO] (Visor - 4583) - 1/1-5:20 - clock->getTime()
-[INFO] (Visor - 4583) - 1/2-8:30 - Envio de peticion
-[INFO] (Visor - 4583) - 1/2-8:30 - Respuesta recibida
+
+[INFO] (Visor - 3202) - 1/20-0:10 - Envio de peticion
+[INFO] (Visor - 3202) - 1/20-0:10 - Respuesta recibida
+[INFO] (Dashboard - 3264) - 1/20-1:40 - Envio de peticion
+[INFO] (Dashboard - 3264) - 1/20-3:30 - Envio de peticion
+[INFO] (Dashboard - 3264) - 1/20-8:40 - Envio de peticion
+[INFO] (Dashboard - 3264) - 1/20-8:40 - Respuesta recibida
+[INFO] (Dashboard - 3264) - 1/20-9:50 - Envio de peticion
+[INFO] (Dashboard - 3264) - 1/20-9:50 - Respuesta recibida
+[INFO] (Dashboard - 3264) - 1/20-10:10 - Envio de peticion
+[INFO] (Dashboard - 3264) - 1/20-10:10 - Respuesta recibida
+[INFO] (Dashboard - 3264) - 1/20-10:20 - Envio de peticion
+[INFO] (Dashboard - 3264) - 1/20-10:20 - Respuesta recibida
+[INFO] (Dashboard - 3264) - 1/20-12:10 - Envio de peticion
+[INFO] (Dashboard - 3264) - 1/20-12:10 - Respuesta recibida
+[INFO] (Dashboard - 3264) - 1/20-12:40 - Envio de peticion
+[INFO] (Dashboard - 3264) - 1/20-12:40 - Respuesta recibida
