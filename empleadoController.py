@@ -42,3 +42,29 @@ class EmpleadoController:
             return empleados
         except Exception as ex:
             print(ex)
+
+    """
+    Crea un nuevo empleado
+    """
+
+    def createEmpleado(self, dni, nombre, apellido, clave):
+        try:
+            if empleado.insert(dni, nombre, apellido, clave) != True:
+                logging.error("Error al registrar el empleado")
+                return 'No se pudo registrar el empleado'
+            return 'Empleado registrado correctamente'
+        except Exception as ex:
+            return str(ex)
+
+    """
+    Elimina un empleado por su dni
+    """
+    def deleteEmpleadoByDni(self, dni):
+        try:
+            if empleado.deleteByDni(dni) != True:
+                logging.error("Error al registrar el empleado")
+                return 'No se pudo registrar el empleado'
+            return 'Empleado eliminado correctamente'
+        except Exception as ex:
+            return str(ex)
+

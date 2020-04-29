@@ -54,7 +54,7 @@ def main():
         sendLog('info', 'Respuesta recibida')
         oLeido = pickle.loads(leido)
         print(oLeido)
-        
+
         # Termina la conexion
         desc.close()
     print("Hasta luego")
@@ -79,36 +79,43 @@ def menu():
     while not salir:
         print("1. Ver empleados")
         print("2. Ver movimientos")
-        print("3. Salir")
+        print("3. Agregar empleado")
+        print("4. Eliminar empleado")
+        print("0. Salir")
         opcion = pedirOpcion()
         if opcion == 1:
             return (1, "getEmpleados")
         elif opcion == 2:
             return (1, "getMovimientos")
         elif opcion == 3:
+            return createEmpleado()
+        elif opcion == 4:
+            return deleteEmpleado()
+        elif opcion == 0:
             salir = True
             return False
         else:
-            print("Ingrese un numero entre 1 y 3")
+            print("Ingrese un numero")
 
 
-def setPeticion(tipo):
+def createEmpleado():
+    print("Ingrese su nombre: ")
+    nombre = raw_input()
+    print("Ingrese su apellido: ")
+    apellido = raw_input()
     print("Ingrese su DNI: ")
     dni = input()
     print("Ingrese su clave: ")
     clave = input()
 
+    return (1, 'addEmpleado', dni, nombre, apellido, clave)
 
-    # Solicitud al clock de horario
-    clockConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    clockConnection.connect((SERVER_IP, CLOCK_PORT))
-    clockConnection.send(str(1))
-    response = clockConnection.recv(2048)
-    time = pickle.loads(response)
-    clockConnection.close()
-    return (dni, clave, tipo, time)
 
+def deleteEmpleado():
+    print("Ingrese su DNI: ")
+    dni = input()
+
+    return (1, 'deleteEmpleado', dni)
 
 if __name__ == "__main__":
     main()

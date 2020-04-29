@@ -31,6 +31,8 @@ empleado_controller = EmpleadoController()
 """
 Registra un log
 """
+
+
 def sendLog(nivel, accion):
     # Generacion del mensaje
     msg = (os.getppid(), 'Server', nivel, accion)
@@ -43,10 +45,13 @@ def sendLog(nivel, accion):
     loggerConnection.send(msg)
     loggerConnection.close()
 
+
 """
 Recibe una peticion
 Identifica a que controller debe llamar y devuelve una respuesta
 """
+
+
 def processPeticion(oLeido, newdesc):
     # Peticion de un Lector
     if oLeido[0] == 0:
@@ -56,13 +61,22 @@ def processPeticion(oLeido, newdesc):
     # Peticion de un Dashboard
     elif oLeido[0] == 1:
         if oLeido[1] == "getEmpleados":
-            print('Empleados')
             response = empleado_controller.getEmpleados()
         elif oLeido[1] == "getMovimientos":
             response = movimiento_controller.getMovimientos()
+        elif oLeido[1] == "addEmpleado":
+            response = empleado_controller.createEmpleado(
+                oLeido[2], oLeido[3], oLeido[4], oLeido[5])
+        elif oLeido[1] == "deleteEmpleado":
+            response = empleado_controller.deleteEmpleadoByDni(
+                oLeido[2])
+        else:
+            print('No se reconoce la operacion solicitada')
+            print(oLeido)
     # Envio de respuesta
     oResponse = pickle.dumps(response)
     newdesc.send(oResponse)
+
 
 def main():
     # Inicio del logger
