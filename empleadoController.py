@@ -3,37 +3,68 @@
 
 import logging
 import mysql.connector as mysql
+from empleado import Empleado
 
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
-# Configuracion de DB
-db = mysql.connect(
-    host="localhost",
-    user="root",
-    passwd="root",
-    database="mydatabase"
-)
-cursor = db.cursor()
+# Declaracion de variables
+empleado = Empleado()
 
 
 class EmpleadoController:
     """
     Devuelve un empleado de la DB ubicandolo por DNI
     """
+
     def buscarPorDni(self, dni):
         try:
-            #SELECT
-            query = """SELECT * FROM empleados WHERE dni = %s"""
-            values = (str(dni), )
-            cursor.execute(query, values)
-            empleado = cursor.fetchone()
+            # SELECT
+            result = empleado.selectByDni(dni)
 
             # Verifica que se haya encontrado un empleado
-            if cursor.rowcount < 1:
+            if len(result) < 1:
                 return 'El DNI ingresado es incorrecto'
-            return empleado
+            return result
         except Exception as ex:
             print(ex)
+
+    """
+    Devuelve todos los empleados
+    """
+
+    def getEmpleados(self, ):
+        try:
+            # SELECT
+            empleados = empleado.selectAll()
+            return empleados
+        except Exception as ex:
+            print(ex)
+
+    """
+    Crea un nuevo empleado
+    """
+
+    def createEmpleado(self, dni, nombre, apellido, clave):
+        try:
+            if empleado.insert(dni, nombre, apellido, clave) != True:
+                logging.error("Error al registrar el empleado")
+                return 'No se pudo registrar el empleado'
+            return 'Empleado registrado correctamente'
+        except Exception as ex:
+            return str(ex)
+
+    """
+    Elimina un empleado por su dni
+    """
+    def deleteEmpleadoByDni(self, dni):
+        try:
+            if empleado.deleteByDni(dni) != True:
+                logging.error("Error al registrar el empleado")
+                return 'No se pudo registrar el empleado'
+            return 'Empleado eliminado correctamente'
+        except Exception as ex:
+            return str(ex)
+
