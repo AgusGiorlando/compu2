@@ -39,7 +39,7 @@ class MovimientoController:
             return 'La clave ingresada es incorrecta'
 
         # Fecha y Hora
-        fecha = str(time[0]) + '/' + str(time[1])
+        fecha = str(time[0]).zfill(2) + '/' + str(time[1]).zfill(2)
         hora = str(time[2]) + ':' + str(time[3])
 
         # INSERT movimiento
@@ -56,6 +56,16 @@ class MovimientoController:
         try:
             # SELECT
             movimientos = movimiento.selectAll()
+            return movimientos
+        except Exception as ex:
+            print(ex)
+
+    def getMovimientosByFechaAndEmpleado(self, fecha, id_empleado):
+        """
+        Devuelve los movimientos de una fecha determinada
+        """
+        try:
+            movimientos = movimiento.selectByFechaAndEmpleado(fecha, id_empleado)
             return movimientos
         except Exception as ex:
             print(ex)

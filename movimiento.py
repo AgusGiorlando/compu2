@@ -44,3 +44,13 @@ class Movimiento:
         logging.info(str(cursor.rowcount) + " Movimientos encontrados")
         return movimientos
         # TODO: Manejo de excepciones
+
+    def selectByFechaAndEmpleado(self, fecha, id_empleado):
+        """
+        Devuelve los movimientos de un empleado en una fecha determinada
+        """
+        query = """SELECT * FROM movimientos WHERE (fecha = %s) AND (empleado_id = %s)"""
+        values = (str(fecha), str(id_empleado),)
+        cursor.execute(query, values)
+        movimientos = cursor.fetchall()
+        return movimientos
