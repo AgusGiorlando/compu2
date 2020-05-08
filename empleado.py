@@ -17,7 +17,6 @@ db = mysql.connect(
 )
 cursor = db.cursor()
 
-
 class Empleado:
 
     def selectAll(self,):

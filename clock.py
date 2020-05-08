@@ -6,8 +6,9 @@ import os
 import logging
 import socket
 import threading
-import json
+import multiprocessing
 import pickle
+import reporter
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
@@ -49,10 +50,11 @@ def clock():
                 dia += 1
                 while hora < 24:
                     while minuto < 60:
-                        """
+
                         print(str(dia) + '/' + str(mes) + ' - ' +
-                              str(hora) + ':' + str(minuto))
-                        """
+                              str(hora).zfill(2) + ':' + str(minuto).zfill(2))
+
+                        checkHourAndStartReporter()
                         time.sleep(1)
                         minuto += 10
                     hora += 1
@@ -84,6 +86,13 @@ def connect():
             msg = pickle.dumps(fecha)
             clientSocket.send(msg)
 
+
+def checkHourAndStartReporter():
+    global hora, minuto, mes, dia
+    if hora == 23 and minuto == 50 :
+        print('Inicia reporter')
+        reporterProcess = multiprocessing.Process(target=reporter.createReport, args=(mes, dia))
+        reporterProcess.start()
 
 def main():
     logging.info('Inicio del clock')
