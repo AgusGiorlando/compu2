@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from datetime import datetime
 from movimiento import Movimiento
 from empleadoController import EmpleadoController
 
