@@ -41,6 +41,8 @@ class Empleado:
             connection['cursor'].execute(query, values)
             empleado = connection['cursor'].fetchone()
             return empleado
+        except Exception as ex:
+            print(ex)
         finally:
             database.closeConnection()
 
@@ -58,6 +60,8 @@ class Empleado:
             logging.info(
                 str(connection['cursor'].rowcount) + " Empleado registrado")
             return True
+        except Exception as ex:
+            print(ex)
         finally:
             database.closeConnection()
 
@@ -73,6 +77,8 @@ class Empleado:
             connection['cursor'].execute(query, values)
             connection['db'].commit()
             return True
+        except Exception as ex:
+            print(ex)
         finally:
             database.closeConnection()
 
@@ -88,5 +94,7 @@ class Empleado:
             connection['cursor'].execute(query, values)
             connection['db'].commit()
             return True
+        except Exception as ex:
+            print(ex)
         finally:
             database.closeConnection()

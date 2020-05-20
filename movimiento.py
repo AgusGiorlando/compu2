@@ -25,11 +25,10 @@ class Movimiento:
             connection['db'].commit()
             logging.info(str(connection['cursor'].rowcount) + " Movimiento registrado")
             return True
+        except Exception as ex:
+            print(ex)
         finally:
             database.closeConnection()
-
-            
-        # TODO: Manejo de excepciones
 
     def selectAll(self,):
         """
@@ -44,9 +43,10 @@ class Movimiento:
             connection['db'].commit()
             logging.info(str(connection['cursor'].rowcount) + " Movimientos encontrados")
             return movimientos
+        except Exception as ex:
+            print(ex)            
         finally:
             database.closeConnection()
-            # TODO: Manejo de excepciones
 
     def selectByFechaAndEmpleado(self, fecha, id_empleado):
         """
@@ -60,5 +60,7 @@ class Movimiento:
             connection['cursor'].execute(query, values)
             movimientos = connection['cursor'].fetchall()
             return movimientos
+        except Exception as ex:
+            print(ex)
         finally:
             database.closeConnection()
