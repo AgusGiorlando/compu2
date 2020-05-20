@@ -31,31 +31,39 @@ def sendLog(nivel, accion):
 def main():
     logging.info('process id: %s', str(os.getpid()))
     while True:
-        # Conexion con el server
-        desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-        desc.connect((SERVER_IP, SERVER_PORT))
+        try:
+            # Conexion con el server
+            desc = socket.socket(family=socket.AF_INET,
+                                 type=socket.SOCK_STREAM)
+            desc.connect((SERVER_IP, SERVER_PORT))
 
-        # Menu y generacion de la peticion
-        peticion = menu()
+            # Menu y generacion de la peticion
+            peticion = menu()
 
-        # Si viene false (salir) termina el bucle
-        if not peticion:
+            # Si viene false (salir) termina el bucle
+            if not peticion:
+                # Termina la conexion
+                desc.close()
+                break
+
+            # Formatea y envia la Peticion
+            response = pickle.dumps(peticion)
+            desc.send(response)
+            sendLog('info', 'Envio de peticion')
+
+            # Muestra la respuesta recibida
+            leido = desc.recv(2048)
+            oLeido = pickle.loads(leido)
+            print(oLeido)
+            sendLog('info', 'Respuesta recibida')
             # Termina la conexion
             desc.close()
-            break
-
-        # Formatea y envia la Peticion
-        response = pickle.dumps(peticion)
-        desc.send(response)
-        sendLog('info', 'Envio de peticion')
-
-        # Muestra la respuesta recibida
-        leido = desc.recv(2048)
-        oLeido = pickle.loads(leido)
-        print(oLeido)
-        sendLog('info', 'Respuesta recibida')
-        # Termina la conexion
-        desc.close()
+        except Exception as ex:
+            print(ex)
+            try:
+                input("Presiona enter para volver a intentar")
+            except SyntaxError:
+                pass
     print("Hasta luego")
     logging.info('Fin del lector')
 
@@ -99,14 +107,17 @@ def setPeticion(tipo):
 
 
     # Solicitud al clock de horario
-    clockConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    clockConnection.connect((SERVER_IP, CLOCK_PORT))
-    clockConnection.send(str(1))
-    response = clockConnection.recv(2048)
-    time = pickle.loads(response)
-    clockConnection.close()
-    return (0, dni, clave, tipo, time)
+    try:
+        clockConnection = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_STREAM)
+        clockConnection.connect((SERVER_IP, CLOCK_PORT))
+        clockConnection.send(str(1))
+        response = clockConnection.recv(2048)
+        time = pickle.loads(response)
+        clockConnection.close()
+        return (0, dni, clave, tipo, time)
+    except Exception  as ex:
+        print(ex)
 
 
 if __name__ == "__main__":

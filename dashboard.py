@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 import logging
 import os
 import socket
@@ -31,32 +32,39 @@ def sendLog(nivel, accion):
 def main():
     logging.info('process id: %s', str(os.getpid()))
     while True:
-        # Conexion con el server
-        desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-        desc.connect((SERVER_IP, SERVER_PORT))
+        try:
+            # Conexion con el server
+            desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+            desc.connect((SERVER_IP, SERVER_PORT))
 
-        # Menu y generacion de la peticion
-        peticion = menu()
+            # Menu y generacion de la peticion
+            peticion = menu()
 
-        # Si viene false (salir) termina el bucle
-        if not peticion:
+            # Si viene false (salir) termina el bucle
+            if not peticion:
+                # Termina la conexion
+                desc.close()
+                break
+
+            # Formatea y envia la Peticion
+            response = pickle.dumps(peticion)
+            desc.send(response)
+            sendLog('info', 'Envio de peticion')
+
+            # Muestra la respuesta recibida
+            leido = desc.recv(2048)
+            sendLog('info', 'Respuesta recibida')
+            oLeido = pickle.loads(leido)
+            print(oLeido)
+
             # Termina la conexion
             desc.close()
-            break
-
-        # Formatea y envia la Peticion
-        response = pickle.dumps(peticion)
-        desc.send(response)
-        sendLog('info', 'Envio de peticion')
-
-        # Muestra la respuesta recibida
-        leido = desc.recv(2048)
-        sendLog('info', 'Respuesta recibida')
-        oLeido = pickle.loads(leido)
-        print(oLeido)
-
-        # Termina la conexion
-        desc.close()
+        except Exception as ex:
+            print(ex)
+            try:
+                input("Presiona enter para volver a intentar")
+            except SyntaxError:
+                pass
     print("Hasta luego")
     logging.info('Fin del dashboard')
 
@@ -99,23 +107,27 @@ def menu():
 
 
 def createEmpleado():
-    print("Ingrese su nombre: ")
-    nombre = raw_input()
-    print("Ingrese su apellido: ")
-    apellido = raw_input()
-    print("Ingrese su DNI: ")
-    dni = input()
-    print("Ingrese su clave: ")
-    clave = input()
-
-    return (1, 'addEmpleado', dni, nombre, apellido, clave)
+    try:
+        print("Ingrese su nombre: ")
+        nombre = raw_input()
+        print("Ingrese su apellido: ")
+        apellido = raw_input()
+        print("Ingrese su DNI: ")
+        dni = input()
+        print("Ingrese su clave: ")
+        clave = input()
+        return (1, 'addEmpleado', dni, nombre, apellido, clave)
+    except Exception  as ex:
+        print(ex)
 
 
 def deleteEmpleado():
-    print("Ingrese su DNI: ")
-    dni = input()
-
-    return (1, 'deleteEmpleado', dni)
+    try:
+        print("Ingrese su DNI: ")
+        dni = input()
+        return (1, 'deleteEmpleado', dni)
+    except Exception as ex:
+        print(ex)
 
 if __name__ == "__main__":
     main()
