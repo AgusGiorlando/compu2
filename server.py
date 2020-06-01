@@ -61,6 +61,7 @@ def processPeticion(oLeido, newdesc):
     # Peticion de un Dashboard
     elif oLeido[0] == 1:
         if oLeido[1] == "getEmpleados":
+            print(oLeido)
             response = empleado_controller.getEmpleados()
         elif oLeido[1] == "getMovimientos":
             response = movimiento_controller.getMovimientos()
