@@ -61,7 +61,6 @@ def processPeticion(oLeido, newdesc):
     # Peticion de un Dashboard
     elif oLeido[0] == 1:
         if oLeido[1] == "getEmpleados":
-            print(oLeido)
             response = empleado_controller.getEmpleados()
         elif oLeido[1] == "getMovimientos":
             response = movimiento_controller.getMovimientos()
@@ -94,16 +93,19 @@ def main():
 
     # Espera infinita de nuevos lectores
     while True:
-        newdesc, cli = desc.accept()
-        logging.info(cli)
+        try:
+            newdesc, cli = desc.accept()
+            logging.info(cli)
 
-        leido = newdesc.recv(2048)
-        # TODO: Validacion del objeto recibido
-        oLeido = pickle.loads(leido)
-        # Nuevo hilo
-        thread = threading.Thread(
-            target=processPeticion, args=(oLeido, newdesc))
-        thread.start()
+            leido = newdesc.recv(2048)
+            # TODO: Validacion del objeto recibido
+            oLeido = pickle.loads(leido)
+            # Nuevo hilo
+            thread = threading.Thread(
+                target=processPeticion, args=(oLeido, newdesc))
+            thread.start()            
+        except EOFError:
+            pass
 
 
 if __name__ == "__main__":

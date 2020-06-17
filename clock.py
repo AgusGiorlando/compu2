@@ -50,13 +50,11 @@ def clock():
                 dia += 1
                 while hora < 24:
                     while minuto < 60:
-
                         print(str(dia) + '/' + str(mes) + ' - ' +
                               str(hora).zfill(2) + ':' + str(minuto).zfill(2))
-
                         checkHourAndStartReporter()
                         time.sleep(1)
-                        minuto += 10
+                        minuto += 30
                     hora += 1
                     minuto = 0
                 hora = 0
@@ -89,7 +87,7 @@ def connect():
 
 def checkHourAndStartReporter():
     global hora, minuto, mes, dia
-    if hora == 23 and minuto == 50 :
+    if hora == 23 and minuto == 30 :
         print('Inicia reporter')
         reporterProcess = multiprocessing.Process(target=reporter.createReport, args=(mes, dia))
         reporterProcess.start()
