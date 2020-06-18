@@ -101,9 +101,9 @@ def main():
             # Nuevo hilo
             thread = threading.Thread(
                 target=processPeticion, args=(oLeido, newdesc))
-            thread.start()
-        except Exception as ex:
-            print(ex)
+            thread.start()            
+        except EOFError:
+            pass
 
 
 if __name__ == "__main__":
