@@ -18,7 +18,7 @@ class Empleado:
         try:
             database = Database()
             connection = database.getConnection()
-            query = 'SELECT * FROM empleados'
+            query = 'SELECT id, dni, nombre, apellido FROM empleados'
             connection['cursor'].execute(query)
             empleados = connection['cursor'].fetchall()
             connection['db'].commit()

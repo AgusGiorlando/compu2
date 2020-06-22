@@ -4,6 +4,7 @@ import logging
 import os
 import socket
 import pickle
+from tabulate import tabulate
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,
@@ -14,7 +15,8 @@ SERVER_IP = 'localhost'
 SERVER_PORT = 5000
 CLOCK_PORT = 5001
 LOGGER_PORT = 5003
-
+showTable = False
+headers = []
 
 def sendLog(nivel, accion):
     # Generacion del mensaje
@@ -49,24 +51,34 @@ def main():
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
             desc.send(response)
-            sendLog('info', 'Envio de peticion')
+            #sendLog('info', 'Envio de peticion')
 
             # Muestra la respuesta recibida
             leido = desc.recv(2048)
-            sendLog('info', 'Respuesta recibida')
+            #sendLog('info', 'Respuesta recibida')
             oLeido = pickle.loads(leido)
-            print(oLeido)
+            showRespuesta(oLeido)
 
             # Termina la conexion
             desc.close()
         except Exception as ex:
             print(ex)
+            sendLog('error', 'Error: ' + str(ex))
             try:
                 input("Presiona enter para volver a intentar")
             except SyntaxError:
                 pass
     print("Hasta luego")
     logging.info('Fin del dashboard')
+
+def showRespuesta(oLeido):
+    global headers, showTable
+    if showTable:
+        print('\n')
+        print(tabulate(oLeido,headers=headers, tablefmt="orgtbl"))
+        print('\n')
+    else:
+        print(oLeido)
 
 
 def pedirOpcion():
@@ -82,6 +94,7 @@ def pedirOpcion():
 
 
 def menu():
+    global headers, showTable
     salir = False
     opcion = 0
     while not salir:
@@ -92,12 +105,20 @@ def menu():
         print("0. Salir")
         opcion = pedirOpcion()
         if opcion == 1:
+            showTable = True
+            headers = ['ID', 'DNI', 'Nombre', 'Apellido']
             return (1, "getEmpleados")
         elif opcion == 2:
+            showTable = True
+            headers = ['ID', 'ID Empleado', 'Tipo', 'Fecha', 'Hora']
             return (1, "getMovimientos")
         elif opcion == 3:
+            showTable = False
+            headers = ['Nuevo empleado']
             return createEmpleado()
         elif opcion == 4:
+            showTable = False
+            headers = ['Eliminar empleado']
             return deleteEmpleado()
         elif opcion == 0:
             salir = True
