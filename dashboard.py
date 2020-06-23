@@ -51,7 +51,7 @@ def main():
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
             desc.send(response)
-            #sendLog('info', 'Envio de peticion')
+            sendLog('info', 'Envio de peticion')
 
             # Muestra la respuesta recibida
             leido = desc.recv(2048)
