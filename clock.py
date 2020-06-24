@@ -63,7 +63,7 @@ def clock():
 def getFecha():
     # Informa que se refiere a las variables globales
     global hora, minuto, mes, dia
-    return (mes, dia, hora, minuto)
+    return (mes, dia, str(hora).zfill(2), str(minuto).zfill(2))
 
 
 def connect():

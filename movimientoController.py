@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from datetime import datetime
 from movimiento import Movimiento
 from empleadoController import EmpleadoController
 
@@ -26,28 +25,30 @@ class MovimientoController:
         Inserta en DB el movimiento
         Devuelve un mensaje al lector sobre el estado de la operacion
         """
+        try:
+            # SELECT de Empleado
+            resultado = empleadoController.buscarPorDni(dni)
+            if type(resultado) == str:
+                return resultado
+            id_empleado = resultado[0]
+            clave_empleado = resultado[4]
 
-        # SELECT de Empleado
-        resultado = empleadoController.buscarPorDni(dni)
-        if type(resultado) == str:
-            return resultado
-        id_empleado = resultado[0]
-        clave_empleado = resultado[4]
+            # Verificacion de clave
+            if str(clave_empleado) != str(clave):
+                return 'La clave ingresada es incorrecta'
 
-        # Verificacion de clave
-        if str(clave_empleado) != str(clave):
-            return 'La clave ingresada es incorrecta'
+            # Fecha y Hora
+            fecha = str(time[0]).zfill(2) + '/' + str(time[1]).zfill(2)
+            hora = str(time[2]) + ':' + str(time[3])
 
-        # Fecha y Hora
-        fecha = str(time[0]).zfill(2) + '/' + str(time[1]).zfill(2)
-        hora = str(time[2]) + ':' + str(time[3])
-
-        # INSERT movimiento
-        if movimiento.insert(id_empleado, tipo, fecha, hora) != True:
-            logging.info("Error al registrar el movimiento")
-            return 'No se pudo registrar el movimiento'
-
-        return 'Movimiento registrado correctamente'
+            # INSERT movimiento
+            if movimiento.insert(id_empleado, tipo, fecha, hora) != True:
+                logging.info("Error al registrar el movimiento")
+                return 'No se pudo registrar el movimiento'
+            
+            return 'Movimiento registrado correctamente'
+        except Exception as ex:
+            print(ex)
 
     def getMovimientos(self, ):
         """
@@ -65,7 +66,8 @@ class MovimientoController:
         Devuelve los movimientos de una fecha determinada
         """
         try:
-            movimientos = movimiento.selectByFechaAndEmpleado(fecha, id_empleado)
+            movimientos = movimiento.selectByFechaAndEmpleado(
+                fecha, id_empleado)
             return movimientos
         except Exception as ex:
             print(ex)

@@ -1,8 +1,10 @@
 #!/usr/bin/python3
+
 import logging
 import os
 import socket
 import pickle
+from tabulate import tabulate
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,
@@ -13,7 +15,8 @@ SERVER_IP = 'localhost'
 SERVER_PORT = 5000
 CLOCK_PORT = 5001
 LOGGER_PORT = 5003
-
+showTable = False
+headers = []
 
 def sendLog(nivel, accion):
     # Generacion del mensaje
@@ -31,34 +34,51 @@ def sendLog(nivel, accion):
 def main():
     logging.info('process id: %s', str(os.getpid()))
     while True:
-        # Conexion con el server
-        desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-        desc.connect((SERVER_IP, SERVER_PORT))
+        try:
+            # Conexion con el server
+            desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+            desc.connect((SERVER_IP, SERVER_PORT))
 
-        # Menu y generacion de la peticion
-        peticion = menu()
+            # Menu y generacion de la peticion
+            peticion = menu()
 
-        # Si viene false (salir) termina el bucle
-        if not peticion:
+            # Si viene false (salir) termina el bucle
+            if not peticion:
+                # Termina la conexion
+                desc.close()
+                break
+
+            # Formatea y envia la Peticion
+            response = pickle.dumps(peticion)
+            desc.send(response)
+            sendLog('info', 'Envio de peticion')
+
+            # Muestra la respuesta recibida
+            leido = desc.recv(2048)
+            #sendLog('info', 'Respuesta recibida')
+            oLeido = pickle.loads(leido)
+            showRespuesta(oLeido)
+
             # Termina la conexion
             desc.close()
-            break
-
-        # Formatea y envia la Peticion
-        response = pickle.dumps(peticion)
-        desc.send(response)
-        sendLog('info', 'Envio de peticion')
-
-        # Muestra la respuesta recibida
-        leido = desc.recv(2048)
-        sendLog('info', 'Respuesta recibida')
-        oLeido = pickle.loads(leido)
-        print(oLeido)
-
-        # Termina la conexion
-        desc.close()
+        except Exception as ex:
+            print(ex)
+            sendLog('error', 'Error: ' + str(ex))
+            try:
+                input("Presiona enter para volver a intentar")
+            except SyntaxError:
+                pass
     print("Hasta luego")
     logging.info('Fin del dashboard')
+
+def showRespuesta(oLeido):
+    global headers, showTable
+    if showTable:
+        print('\n')
+        print(tabulate(oLeido,headers=headers, tablefmt="orgtbl"))
+        print('\n')
+    else:
+        print(oLeido)
 
 
 def pedirOpcion():
@@ -74,6 +94,7 @@ def pedirOpcion():
 
 
 def menu():
+    global headers, showTable
     salir = False
     opcion = 0
     while not salir:
@@ -84,12 +105,20 @@ def menu():
         print("0. Salir")
         opcion = pedirOpcion()
         if opcion == 1:
+            showTable = True
+            headers = ['ID', 'DNI', 'Nombre', 'Apellido']
             return (1, "getEmpleados")
         elif opcion == 2:
+            showTable = True
+            headers = ['ID', 'ID Empleado', 'Tipo', 'Fecha', 'Hora']
             return (1, "getMovimientos")
         elif opcion == 3:
+            showTable = False
+            headers = ['Nuevo empleado']
             return createEmpleado()
         elif opcion == 4:
+            showTable = False
+            headers = ['Eliminar empleado']
             return deleteEmpleado()
         elif opcion == 0:
             salir = True
@@ -99,23 +128,27 @@ def menu():
 
 
 def createEmpleado():
-    print("Ingrese su nombre: ")
-    nombre = raw_input()
-    print("Ingrese su apellido: ")
-    apellido = raw_input()
-    print("Ingrese su DNI: ")
-    dni = input()
-    print("Ingrese su clave: ")
-    clave = input()
-
-    return (1, 'addEmpleado', dni, nombre, apellido, clave)
+    try:
+        print("Ingrese su nombre: ")
+        nombre = raw_input()
+        print("Ingrese su apellido: ")
+        apellido = raw_input()
+        print("Ingrese su DNI: ")
+        dni = input()
+        print("Ingrese su clave: ")
+        clave = input()
+        return (1, 'addEmpleado', dni, nombre, apellido, clave)
+    except Exception  as ex:
+        print(ex)
 
 
 def deleteEmpleado():
-    print("Ingrese su DNI: ")
-    dni = input()
-
-    return (1, 'deleteEmpleado', dni)
+    try:
+        print("Ingrese su DNI: ")
+        dni = input()
+        return (1, 'deleteEmpleado', dni)
+    except Exception as ex:
+        print(ex)
 
 if __name__ == "__main__":
     main()

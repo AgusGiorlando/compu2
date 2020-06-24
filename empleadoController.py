@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import mysql.connector as mysql
 from empleado import Empleado
 
 

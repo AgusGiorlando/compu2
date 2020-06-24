@@ -38,7 +38,7 @@ def sendLog(nivel, accion):
     loggerConnection.close()
 
 def createReport(mes, dia):
-    #sendLog('info', 'Iniciando reporter')
+    sendLog('info', 'Iniciando reporter')
     fecha = str(dia).zfill(2)+ '/' + str(mes).zfill(2)
     file_name = str(dia).zfill(2)+ '-' + str(mes).zfill(2)
     file_path = 'reports/' + file_name + '.txt'
@@ -63,7 +63,7 @@ def createReport(mes, dia):
             registro = empleado[3] + ', ' + empleado[2] + '\t\t' + str(total_horas).zfill(2) + ':' + str(total_minutos).zfill(2) + '\n'
         file.write(registro)
     file.close()
-    #sendLog('info', 'Reporte Completo')
+    sendLog('info', 'Reporte Completo')
 
 if __name__ == "__main__":
     createReport(str(1).zfill(2), str(1).zfill(2))
