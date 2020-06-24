@@ -25,11 +25,7 @@ LOGGER_PORT = 5003
 CLOCK_PORT = 5001
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
-
-
-def logout():
-    print('Bye')
-
+terminate = False
 
 def sendLog(nivel, accion):
     """
@@ -81,8 +77,10 @@ def processPeticion(oLeido, newdesc):
 
 
 def service():
+    global terminate
     # Nuevo Socket
     desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+    desc.settimeout(3.0)
     # para que no diga address already in use ...
     desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     desc.bind((SERVER_IP, SERVER_PORT))
@@ -94,7 +92,6 @@ def service():
         try:
             newdesc, cli = desc.accept()
             logging.info(cli)
-
             leido = newdesc.recv(2048)
             # TODO: Validacion del objeto recibido
             oLeido = pickle.loads(leido)
@@ -104,6 +101,9 @@ def service():
             thread.start()
         except EOFError:
             pass
+        except socket.timeout:
+            if terminate:
+                break
 
 
 def client():
@@ -122,7 +122,6 @@ def client():
                 input("Presiona enter para volver a intentar")
             except SyntaxError:
                 pass
-    logout()
 
 
 def pedirOpcion():
@@ -167,6 +166,7 @@ def getHora():
 
 
 def main():
+    global terminate
     print('Iniciando servidor...')
     # Inicio del logger
     logger = Logger()
@@ -174,14 +174,25 @@ def main():
     loggerProcess.start()
 
     try:
+        # Inicializa los hilos
         serviceThread = threading.Thread(name='service', target=service)
         clientThread = threading.Thread(name='client', target=client)
 
         serviceThread.start()
         clientThread.start()
+
+        # Terminacion de hiloss
+        clientThread.join()
+        print('Cliente terminado')
+        terminate = True
+        serviceThread.join()
+        print('Servicio terminado')
+        loggerProcess.terminate()
+        loggerProcess.join()
+        print('Logger terminado')
+        print('Hasta luego')
     except Exception as ex:
         print(str(ex))
-
 
 if __name__ == "__main__":
     main()
