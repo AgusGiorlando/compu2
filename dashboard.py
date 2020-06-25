@@ -4,6 +4,7 @@ import logging
 import os
 import socket
 import pickle
+import settings
 from tabulate import tabulate
 
 # Configuracion del login
@@ -11,10 +12,6 @@ logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
-SERVER_IP = 'localhost'
-SERVER_PORT = 5000
-CLOCK_PORT = 5001
-LOGGER_PORT = 5003
 showTable = False
 headers = []
 
@@ -26,18 +23,19 @@ def sendLog(nivel, accion):
     # Envio
     loggerConnection = socket.socket(
         family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect((SERVER_IP, LOGGER_PORT))
+    loggerConnection.connect((os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
     loggerConnection.send(msg)
     loggerConnection.close()
 
 
 def main():
     logging.info('process id: %s', str(os.getpid()))
+    sendLog('info', 'TEST')
     while True:
         try:
             # Conexion con el server
             desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-            desc.connect((SERVER_IP, SERVER_PORT))
+            desc.connect((os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
 
             # Menu y generacion de la peticion
             peticion = menu()

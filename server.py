@@ -7,10 +7,10 @@ import logging
 import pickle
 import multiprocessing
 import os
-
 from logger import Logger
 from movimientoController import MovimientoController
 from empleadoController import EmpleadoController
+import settings
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
@@ -19,10 +19,6 @@ logging.basicConfig(level=logging.INFO,
 logging.info('Inicio del server')
 
 # Declaracion de variables
-SERVER_IP = 'localhost'
-SERVER_PORT = 5000
-LOGGER_PORT = 5003
-CLOCK_PORT = 5001
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
 terminate = False
@@ -38,7 +34,7 @@ def sendLog(nivel, accion):
     # Envio
     loggerConnection = socket.socket(
         family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect((SERVER_IP, LOGGER_PORT))
+    loggerConnection.connect((os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
     loggerConnection.send(msg)
     loggerConnection.close()
 
@@ -83,7 +79,7 @@ def service():
     desc.settimeout(3.0)
     # para que no diga address already in use ...
     desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    desc.bind((SERVER_IP, SERVER_PORT))
+    desc.bind((os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
     desc.listen(100)
 
     # Espera infinita de nuevos lectores
@@ -155,7 +151,7 @@ def menu():
 def getHora():
     clockConnection = socket.socket(
         family=socket.AF_INET, type=socket.SOCK_STREAM)
-    clockConnection.connect((SERVER_IP, CLOCK_PORT))
+    clockConnection.connect((os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
     clockConnection.send(str(1))
     response = clockConnection.recv(2048)
     time = pickle.loads(response)

@@ -9,15 +9,13 @@ import threading
 import multiprocessing
 import pickle
 import reporter
+import settings
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
-NUM_VISORES = 100  # TODO: Poner infinito vs parametro
-SERVER_IP = 'localhost'
-VISOR_PORT = 5001
 hora = 0
 minuto = 0
 mes = 0
@@ -71,8 +69,8 @@ def connect():
     desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
     # para que no diga address already in use ...
     desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    desc.bind((SERVER_IP, VISOR_PORT))
-    desc.listen(NUM_VISORES + 1)
+    desc.bind((os.getenv("SERVER_IP"), int(os.getenv("VISOR_PORT"))))
+    desc.listen(100 + 1)
 
     # Espera infinita de nuevos lectores
     while True:

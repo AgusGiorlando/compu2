@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import mysql.connector as mysql
+import os
 
 
 class Database:
     def __init__(self, ):
         # Configuracion de DB
         self.db = mysql.connect(
-            host="localhost",
-            user="root",
-            passwd="root",
-            database="mydatabase"
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            passwd=os.getenv("DB_PASSWD"),
+            database=os.getenv("DATABASE")
         )
         self.cursor = self.db.cursor() 
     
