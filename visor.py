@@ -43,17 +43,16 @@ def main():
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
             desc.send(response)
-            sendLog('info', 'Envio de peticion')
 
             # Muestra la respuesta recibida
             leido = desc.recv(2048)
             oLeido = pickle.loads(leido)
             print(oLeido)
-            sendLog('info', 'Respuesta recibida')
+
             # Termina la conexion
             desc.close()
         except Exception as ex:
-            print(ex)
+            sendLog('error', 'Error: ' + str(ex))
             try:
                 input("Presiona enter para volver a intentar")
             except SyntaxError:

@@ -29,8 +29,6 @@ def sendLog(nivel, accion):
 
 
 def main():
-    logging.info('process id: %s', str(os.getpid()))
-    sendLog('info', 'TEST')
     while True:
         try:
             # Conexion con el server
@@ -49,25 +47,22 @@ def main():
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
             desc.send(response)
-            sendLog('info', 'Envio de peticion')
-
-            # Muestra la respuesta recibida
             leido = desc.recv(2048)
-            #sendLog('info', 'Respuesta recibida')
-            oLeido = pickle.loads(leido)
-            showRespuesta(oLeido)
 
             # Termina la conexion
             desc.close()
+
+            # Muestra la respuesta recibida
+            oLeido = pickle.loads(leido)
+            showRespuesta(oLeido)
+
         except Exception as ex:
-            print(ex)
             sendLog('error', 'Error: ' + str(ex))
             try:
                 input("Presiona enter para volver a intentar")
             except SyntaxError:
                 pass
     print("Hasta luego")
-    logging.info('Fin del dashboard')
 
 def showRespuesta(oLeido):
     global headers, showTable
