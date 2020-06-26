@@ -36,7 +36,10 @@ class Logger:
 
             msg = clientSocket.recv(2048)
             msg = pickle.loads(msg)
-
+            if msg[3] == 'terminate':
+                writer.terminate()
+                writer.join()
+                break
             time = self.getTime()
             queue.put([msg, time])
 

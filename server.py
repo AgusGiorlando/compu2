@@ -223,7 +223,8 @@ def main():
         terminate = True
         serviceThread.join()
         print('Servicio terminado')
-        loggerProcess.terminate()
+        #loggerProcess.terminate()
+        sendLog('info', 'terminate')
         loggerProcess.join()
         print('Logger terminado')
         print('Hasta luego')
