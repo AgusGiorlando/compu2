@@ -7,6 +7,7 @@ import logging
 import pickle
 import multiprocessing
 import os
+from utils.loggerHelper import LoggerHelper
 from logger import Logger
 from controllers.movimientoController import MovimientoController
 from controllers.empleadoController import EmpleadoController
@@ -22,24 +23,8 @@ logging.info('Inicio del server')
 # Declaracion de variables
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
+logger_helper = LoggerHelper()
 terminate = False
-
-def sendLog(nivel, accion):
-    """
-    Registra un log
-    """
-    # Generacion del mensaje
-    msg = (os.getppid(), 'Server', nivel, accion)
-    msg = pickle.dumps(msg)
-
-    # Envio
-    loggerConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect(
-        (os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
-    loggerConnection.send(msg)
-    loggerConnection.close()
-
 
 def processPeticion(oLeido, newdesc):
     """
@@ -83,7 +68,7 @@ def service():
         # para que no diga address already in use ...
         desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     except socket.error as err:
-        sendLog('error', 'Error al crear socket: ' + str(err))
+        logger_helper.sendLog('server', 'error', 'Error al crear socket: ' + str(err))
         print('Error al crear socket: ' + str(err))
         try:
             input("Presiona enter para volver a intentar")
@@ -98,7 +83,11 @@ def service():
         try:
             newdesc, cli = desc.accept()
             logging.info(cli)
-            leido = newdesc.recv(2048)
+            try:
+                leido = newdesc.recv(2048)
+            except socket.error as e:
+                logger_helper.sendLog('server', 'error', 'Error al recibir: ' + str(e))
+                pass
             oLeido = pickle.loads(leido)
             # Nuevo hilo
             threading.Thread(
@@ -162,7 +151,7 @@ def getHora():
         clockConnection = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_STREAM)
     except socket.error as err:
-        sendLog('error', 'Error al crear socket: ' + str(err))
+        logger_helper.sendLog('server', 'error','Error al crear socket: ' + str(err))
         print('Error al crear socket: ' + str(err))
         try:
             input("Presiona enter para volver a intentar")
@@ -172,26 +161,26 @@ def getHora():
         clockConnection.connect(
             (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
     except socket.gaierror as err:
-        sendLog('error', 'Error de ruta: ' + str(err))
+        logger_helper.sendLog('server', 'error','Error de ruta: ' + str(err))
         print('Error de ruta: ' + str(err))
         return
     except socket.error as err:
-        sendLog('error', 'Error de conexion: ' + str(err))
+        logger_helper.sendLog('server', 'error', 'Error de conexion: ' + str(err))
         print('Error de conexion: ' + str(err))
         return
     try:
         clockConnection.send(str(1))
     except socket.error as err:
-        sendLog('error', 'Error de envio: ' + str(err))
+        logger_helper.sendLog('server', 'error',  'Error de envio: ' + str(err))
         print('Error de envio: ' + str(err))
         return
     try:
         response = clockConnection.recv(2048)
     except socket.error as err:
-        sendLog('error', 'Error de recepcion: ' + str(err))
+        logger_helper.sendLog('server', 'error',  'Error de recepcion: ' + str(err))
         print('Error de recepcion: ' + str(err))
     if not len(response):
-        sendLog('warning', 'No se recibio ningun objeto')
+        logger_helper.sendLog('server', 'warning', 'No se recibio ningun objeto')
         return
 
     time = pickle.loads(response)
@@ -223,8 +212,7 @@ def main():
         terminate = True
         serviceThread.join()
         print('Servicio terminado')
-        #loggerProcess.terminate()
-        sendLog('info', 'terminate')
+        logger_helper.sendLog('server', 'info', 'terminate')
         loggerProcess.join()
         print('Logger terminado')
         print('Hasta luego')

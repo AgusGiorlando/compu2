@@ -5,6 +5,7 @@ import os
 import socket
 import pickle
 import settings
+from utils.loggerHelper import LoggerHelper
 from tabulate import tabulate
 
 # Configuracion del login
@@ -14,20 +15,7 @@ logging.basicConfig(level=logging.INFO,
 # Declaracion de variables
 showTable = False
 headers = []
-
-
-def sendLog(nivel, accion):
-    # Generacion del mensaje
-    msg = (os.getppid(), 'Dashboard', nivel, accion)
-    msg = pickle.dumps(msg)
-
-    # Envio
-    loggerConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect(
-        (os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
-    loggerConnection.send(msg)
-    loggerConnection.close()
+logger_helper = LoggerHelper()
 
 
 def main():
@@ -39,17 +27,43 @@ def main():
             # Si viene false (salir) termina el bucle
             if not peticion:
                 break
-            
+
             # Conexion con el server
-            desc = socket.socket(family=socket.AF_INET,
-                                 type=socket.SOCK_STREAM)
-            desc.connect(
-                (os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
+            try:
+                desc = socket.socket(family=socket.AF_INET,
+                                     type=socket.SOCK_STREAM)
+            except socket.error as err:
+                logger_helper.sendLog(
+                    'dashboard', 'error', 'Error al crear socket: ' + str(err))
+                raise Exception("Error al iniciar la conexion")
+
+            try:
+                desc.connect(
+                    (os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
+            except socket.gaierror as err:
+                logger_helper.sendLog('dashboard', 'error',
+                                      'Error de ruta: ' + str(err))
+                raise Exception("Error de ruta")
 
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
-            desc.send(response)
-            leido = desc.recv(2048)
+            try:
+                desc.send(response)
+            except socket.error as err:
+                logger_helper.sendLog(
+                    'Dashboard', 'error',  'Error de envio: ' + str(err))
+                raise Exception("Error de envio")
+
+            try:
+                leido = desc.recv(2048)
+            except socket.error as err:
+                logger_helper.sendLog(
+                    'Dashboard', 'error',  'Error de recepcion: ' + str(err))
+                raise Exception("Error de recepcion")
+            if not len(leido):
+                logger_helper.sendLog(
+                    'dashboard', 'warning', 'No se recibio ningun objeto')
+                return
 
             # Termina la conexion
             desc.close()
@@ -59,7 +73,7 @@ def main():
             showRespuesta(oLeido)
 
         except Exception as ex:
-            sendLog('error', 'Error: ' + str(ex))
+            logger_helper.sendLog('dashboard', 'error', 'Error: ' + str(ex))
             try:
                 input("Presiona enter para volver a intentar")
             except SyntaxError:

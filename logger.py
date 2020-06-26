@@ -36,24 +36,29 @@ class Logger:
 
             msg = clientSocket.recv(2048)
             msg = pickle.loads(msg)
+            print(msg)
             if msg[3] == 'terminate':
                 writer.terminate()
                 writer.join()
                 break
+
             time = self.getTime()
             queue.put([msg, time])
 
     def getTime(self, ):
-        # Solicitud al clock de horario
-        clockConnection = socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_STREAM)
-        clockConnection.connect(
-            (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
-        clockConnection.send(str(1))
-        response = clockConnection.recv(2048)
-        time = pickle.loads(response)
-        clockConnection.close()
-        return time
+        try:
+            # Solicitud al clock de horario
+            clockConnection = socket.socket(
+                family=socket.AF_INET, type=socket.SOCK_STREAM)
+            clockConnection.connect(
+                (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
+            clockConnection.send(str(1))
+            response = clockConnection.recv(2048)
+            time = pickle.loads(response)
+            clockConnection.close()
+            return time
+        except:
+            return (0,0,0,0)
 
     def writerProc(self,):
         """
