@@ -15,6 +15,7 @@ logging.basicConfig(level=logging.INFO,
 showTable = False
 headers = []
 
+
 def sendLog(nivel, accion):
     # Generacion del mensaje
     msg = (os.getppid(), 'Dashboard', nivel, accion)
@@ -23,7 +24,8 @@ def sendLog(nivel, accion):
     # Envio
     loggerConnection = socket.socket(
         family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect((os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
+    loggerConnection.connect(
+        (os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
     loggerConnection.send(msg)
     loggerConnection.close()
 
@@ -31,18 +33,18 @@ def sendLog(nivel, accion):
 def main():
     while True:
         try:
-            # Conexion con el server
-            desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-            desc.connect((os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
-
             # Menu y generacion de la peticion
             peticion = menu()
 
             # Si viene false (salir) termina el bucle
             if not peticion:
-                # Termina la conexion
-                desc.close()
                 break
+            
+            # Conexion con el server
+            desc = socket.socket(family=socket.AF_INET,
+                                 type=socket.SOCK_STREAM)
+            desc.connect(
+                (os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
 
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
@@ -62,13 +64,16 @@ def main():
                 input("Presiona enter para volver a intentar")
             except SyntaxError:
                 pass
+    # Termina la conexion
+    desc.close()
     print("Hasta luego")
+
 
 def showRespuesta(oLeido):
     global headers, showTable
     if showTable:
         print('\n')
-        print(tabulate(oLeido,headers=headers, tablefmt="orgtbl"))
+        print(tabulate(oLeido, headers=headers, tablefmt="orgtbl"))
         print('\n')
     else:
         print(oLeido)
@@ -131,7 +136,7 @@ def createEmpleado():
         print("Ingrese su clave: ")
         clave = input()
         return (1, 'addEmpleado', dni, nombre, apellido, clave)
-    except Exception  as ex:
+    except Exception as ex:
         print(ex)
 
 
@@ -142,6 +147,7 @@ def deleteEmpleado():
         return (1, 'deleteEmpleado', dni)
     except Exception as ex:
         print(ex)
+
 
 if __name__ == "__main__":
     main()

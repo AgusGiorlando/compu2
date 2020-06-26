@@ -12,6 +12,7 @@ from movimientoController import MovimientoController
 from empleadoController import EmpleadoController
 import settings
 
+
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
@@ -22,6 +23,8 @@ logging.info('Inicio del server')
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
 terminate = False
+ident = 1
+
 
 def sendLog(nivel, accion):
     """
@@ -34,18 +37,21 @@ def sendLog(nivel, accion):
     # Envio
     loggerConnection = socket.socket(
         family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect((os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
+    loggerConnection.connect(
+        (os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
     loggerConnection.send(msg)
     loggerConnection.close()
 
 
-def processPeticion(oLeido, newdesc):
+def processPeticion(oLeido, newdesc, cpsa):
     """
     Recibe una peticion
     Identifica a que controller debe llamar y devuelve una respuesta
     """
     try:
         # Peticion de un Lector
+        logging.info('process id: %s - ID: %s',
+                     str(os.getpid()), str(cpsa))
         if oLeido[0] == 0:
             # Llamada al controller
             response = movimiento_controller.agregarMovimiento(
@@ -73,7 +79,7 @@ def processPeticion(oLeido, newdesc):
 
 
 def service():
-    global terminate
+    global terminate, ident
     # Nuevo Socket
     desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
     desc.settimeout(3.0)
@@ -83,18 +89,17 @@ def service():
     desc.listen(100)
 
     # Espera infinita de nuevos lectores
-    # sendLog('info', 'Server activo')
     while True:
         try:
             newdesc, cli = desc.accept()
             logging.info(cli)
             leido = newdesc.recv(2048)
-            # TODO: Validacion del objeto recibido
             oLeido = pickle.loads(leido)
             # Nuevo hilo
-            thread = threading.Thread(
-                target=processPeticion, args=(oLeido, newdesc))
-            thread.start()
+            threading.Thread(
+                target=processPeticion, args=(oLeido, newdesc, ident)).start()
+
+            ident += 1
         except EOFError:
             pass
         except socket.timeout:
@@ -151,7 +156,8 @@ def menu():
 def getHora():
     clockConnection = socket.socket(
         family=socket.AF_INET, type=socket.SOCK_STREAM)
-    clockConnection.connect((os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
+    clockConnection.connect(
+        (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
     clockConnection.send(str(1))
     response = clockConnection.recv(2048)
     time = pickle.loads(response)
@@ -189,6 +195,7 @@ def main():
         print('Hasta luego')
     except Exception as ex:
         print(str(ex))
+
 
 if __name__ == "__main__":
     main()
