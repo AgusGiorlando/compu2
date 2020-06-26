@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from movimiento import Movimiento
+from models.movimiento import Movimiento
 from empleadoController import EmpleadoController
-
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,

@@ -10,8 +10,8 @@ import pickle
 import multiprocessing
 import settings
 
-from movimientoController import MovimientoController
-from empleadoController import EmpleadoController
+from controllers.movimientoController import MovimientoController
+from controllers.empleadoController import EmpleadoController
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,

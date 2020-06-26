@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from empleado import Empleado
+from models.empleado import Empleado
 
 
 # Configuracion del login

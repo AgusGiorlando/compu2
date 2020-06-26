@@ -8,8 +8,8 @@ import pickle
 import multiprocessing
 import os
 from logger import Logger
-from movimientoController import MovimientoController
-from empleadoController import EmpleadoController
+from controllers.movimientoController import MovimientoController
+from controllers.empleadoController import EmpleadoController
 import settings
 
 
@@ -23,8 +23,6 @@ logging.info('Inicio del server')
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
 terminate = False
-ident = 1
-
 
 def sendLog(nivel, accion):
     """
@@ -43,15 +41,13 @@ def sendLog(nivel, accion):
     loggerConnection.close()
 
 
-def processPeticion(oLeido, newdesc, cpsa):
+def processPeticion(oLeido, newdesc):
     """
     Recibe una peticion
     Identifica a que controller debe llamar y devuelve una respuesta
     """
     try:
         # Peticion de un Lector
-        logging.info('process id: %s - ID: %s',
-                     str(os.getpid()), str(cpsa))
         if oLeido[0] == 0:
             # Llamada al controller
             response = movimiento_controller.agregarMovimiento(
@@ -79,12 +75,21 @@ def processPeticion(oLeido, newdesc, cpsa):
 
 
 def service():
-    global terminate, ident
+    global terminate
     # Nuevo Socket
-    desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-    desc.settimeout(3.0)
-    # para que no diga address already in use ...
-    desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+        desc.settimeout(3.0)
+        # para que no diga address already in use ...
+        desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    except socket.error as err:
+        sendLog('error', 'Error al crear socket: ' + str(err))
+        print('Error al crear socket: ' + str(err))
+        try:
+            input("Presiona enter para volver a intentar")
+        except SyntaxError:
+            return
+
     desc.bind((os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
     desc.listen(100)
 
@@ -97,9 +102,8 @@ def service():
             oLeido = pickle.loads(leido)
             # Nuevo hilo
             threading.Thread(
-                target=processPeticion, args=(oLeido, newdesc, ident)).start()
+                target=processPeticion, args=(oLeido, newdesc)).start()
 
-            ident += 1
         except EOFError:
             pass
         except socket.timeout:
@@ -154,12 +158,42 @@ def menu():
 
 
 def getHora():
-    clockConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    clockConnection.connect(
-        (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
-    clockConnection.send(str(1))
-    response = clockConnection.recv(2048)
+    try:
+        clockConnection = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_STREAM)
+    except socket.error as err:
+        sendLog('error', 'Error al crear socket: ' + str(err))
+        print('Error al crear socket: ' + str(err))
+        try:
+            input("Presiona enter para volver a intentar")
+        except SyntaxError:
+            return
+    try:
+        clockConnection.connect(
+            (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
+    except socket.gaierror as err:
+        sendLog('error', 'Error de ruta: ' + str(err))
+        print('Error de ruta: ' + str(err))
+        return
+    except socket.error as err:
+        sendLog('error', 'Error de conexion: ' + str(err))
+        print('Error de conexion: ' + str(err))
+        return
+    try:
+        clockConnection.send(str(1))
+    except socket.error as err:
+        sendLog('error', 'Error de envio: ' + str(err))
+        print('Error de envio: ' + str(err))
+        return
+    try:
+        response = clockConnection.recv(2048)
+    except socket.error as err:
+        sendLog('error', 'Error de recepcion: ' + str(err))
+        print('Error de recepcion: ' + str(err))
+    if not len(response):
+        sendLog('warning', 'No se recibio ningun objeto')
+        return
+
     time = pickle.loads(response)
     clockConnection.close()
 

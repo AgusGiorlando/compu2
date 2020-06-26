@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from database import Database
+from config.database import Database
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,
