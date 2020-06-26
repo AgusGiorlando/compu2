@@ -9,24 +9,23 @@ import threading
 import multiprocessing
 import pickle
 import reporter
+import settings
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
-NUM_VISORES = 100  # TODO: Poner infinito vs parametro
-SERVER_IP = 'localhost'
-VISOR_PORT = 5001
 hora = 0
 minuto = 0
 mes = 0
 dia = 0
+terminate = False
 
 
 def clock():
     # Informa que se refiere a las variables globales
-    global hora, minuto, mes, dia
+    global hora, minuto, mes, dia, terminate
     meses = dict()
     meses = {
         1: 31,
@@ -57,12 +56,13 @@ def clock():
                         minuto += 30
                     hora += 1
                     minuto = 0
+                    if terminate:
+                        break
                 hora = 0
 
 
 def getFecha():
-    # Informa que se refiere a las variables globales
-    global hora, minuto, mes, dia
+    global hora, minuto, mes, dia  # Informa que se refiere a las variables globales
     return (mes, dia, str(hora).zfill(2), str(minuto).zfill(2))
 
 
@@ -71,28 +71,36 @@ def connect():
     desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
     # para que no diga address already in use ...
     desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    desc.bind((SERVER_IP, VISOR_PORT))
-    desc.listen(NUM_VISORES + 1)
+    desc.bind((os.getenv("SERVER_IP"), int(os.getenv("VISOR_PORT"))))
+    desc.listen(100 + 1)
 
     # Espera infinita de nuevos lectores
     while True:
         clientSocket, cli = desc.accept()
         logging.info(cli)
         leido = clientSocket.recv(2048)
-        if leido == '1':
+        try:
+            if leido != '1':
+                raise Exception(
+                    "El objeto recibido no es valido" + str(leido))
             fecha = getFecha()
             msg = pickle.dumps(fecha)
             clientSocket.send(msg)
+        except Exception as ex:
+            print(str(ex))
 
 
 def checkHourAndStartReporter():
     global hora, minuto, mes, dia
-    if hora == 23 and minuto == 30 :
+    if hora == 23 and minuto == 30:
         print('Inicia reporter')
-        reporterProcess = multiprocessing.Process(target=reporter.createReport, args=(mes, dia))
+        reporterProcess = multiprocessing.Process(
+            target=reporter.createReport, args=(mes, dia))
         reporterProcess.start()
 
+
 def main():
+    global terminate
     logging.info('Inicio del clock')
     clockThread = threading.Thread(name='clock', target=clock)
     connectThread = threading.Thread(name='connect', target=connect)

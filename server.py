@@ -7,10 +7,12 @@ import logging
 import pickle
 import multiprocessing
 import os
-
+from utils.loggerHelper import LoggerHelper
 from logger import Logger
-from movimientoController import MovimientoController
-from empleadoController import EmpleadoController
+from controllers.movimientoController import MovimientoController
+from controllers.empleadoController import EmpleadoController
+import settings
+
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
@@ -19,29 +21,10 @@ logging.basicConfig(level=logging.INFO,
 logging.info('Inicio del server')
 
 # Declaracion de variables
-SERVER_IP = 'localhost'
-SERVER_PORT = 5000
-LOGGER_PORT = 5003
-CLOCK_PORT = 5001
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
+logger_helper = LoggerHelper()
 terminate = False
-
-def sendLog(nivel, accion):
-    """
-    Registra un log
-    """
-    # Generacion del mensaje
-    msg = (os.getppid(), 'Server', nivel, accion)
-    msg = pickle.dumps(msg)
-
-    # Envio
-    loggerConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect((SERVER_IP, LOGGER_PORT))
-    loggerConnection.send(msg)
-    loggerConnection.close()
-
 
 def processPeticion(oLeido, newdesc):
     """
@@ -79,26 +62,37 @@ def processPeticion(oLeido, newdesc):
 def service():
     global terminate
     # Nuevo Socket
-    desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-    desc.settimeout(3.0)
-    # para que no diga address already in use ...
-    desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    desc.bind((SERVER_IP, SERVER_PORT))
+    try:
+        desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+        desc.settimeout(3.0)
+        # para que no diga address already in use ...
+        desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    except socket.error as err:
+        logger_helper.sendLog('server', 'error', 'Error al crear socket: ' + str(err))
+        print('Error al crear socket: ' + str(err))
+        try:
+            input("Presiona enter para volver a intentar")
+        except SyntaxError:
+            return
+
+    desc.bind((os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
     desc.listen(100)
 
     # Espera infinita de nuevos lectores
-    # sendLog('info', 'Server activo')
     while True:
         try:
             newdesc, cli = desc.accept()
             logging.info(cli)
-            leido = newdesc.recv(2048)
-            # TODO: Validacion del objeto recibido
+            try:
+                leido = newdesc.recv(2048)
+            except socket.error as e:
+                logger_helper.sendLog('server', 'error', 'Error al recibir: ' + str(e))
+                pass
             oLeido = pickle.loads(leido)
             # Nuevo hilo
-            thread = threading.Thread(
-                target=processPeticion, args=(oLeido, newdesc))
-            thread.start()
+            threading.Thread(
+                target=processPeticion, args=(oLeido, newdesc)).start()
+
         except EOFError:
             pass
         except socket.timeout:
@@ -153,11 +147,42 @@ def menu():
 
 
 def getHora():
-    clockConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    clockConnection.connect((SERVER_IP, CLOCK_PORT))
-    clockConnection.send(str(1))
-    response = clockConnection.recv(2048)
+    try:
+        clockConnection = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_STREAM)
+    except socket.error as err:
+        logger_helper.sendLog('server', 'error','Error al crear socket: ' + str(err))
+        print('Error al crear socket: ' + str(err))
+        try:
+            input("Presiona enter para volver a intentar")
+        except SyntaxError:
+            return
+    try:
+        clockConnection.connect(
+            (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
+    except socket.gaierror as err:
+        logger_helper.sendLog('server', 'error','Error de ruta: ' + str(err))
+        print('Error de ruta: ' + str(err))
+        return
+    except socket.error as err:
+        logger_helper.sendLog('server', 'error', 'Error de conexion: ' + str(err))
+        print('Error de conexion: ' + str(err))
+        return
+    try:
+        clockConnection.send(str(1))
+    except socket.error as err:
+        logger_helper.sendLog('server', 'error',  'Error de envio: ' + str(err))
+        print('Error de envio: ' + str(err))
+        return
+    try:
+        response = clockConnection.recv(2048)
+    except socket.error as err:
+        logger_helper.sendLog('server', 'error',  'Error de recepcion: ' + str(err))
+        print('Error de recepcion: ' + str(err))
+    if not len(response):
+        logger_helper.sendLog('server', 'warning', 'No se recibio ningun objeto')
+        return
+
     time = pickle.loads(response)
     clockConnection.close()
 
@@ -187,12 +212,13 @@ def main():
         terminate = True
         serviceThread.join()
         print('Servicio terminado')
-        loggerProcess.terminate()
+        logger_helper.sendLog('server', 'info', 'terminate')
         loggerProcess.join()
         print('Logger terminado')
         print('Hasta luego')
     except Exception as ex:
         print(str(ex))
+
 
 if __name__ == "__main__":
     main()

@@ -8,20 +8,16 @@ import socket
 import threading
 import pickle
 import multiprocessing
+import settings
 
-from movimientoController import MovimientoController
-from empleadoController import EmpleadoController
+from controllers.movimientoController import MovimientoController
+from controllers.empleadoController import EmpleadoController
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
-NUM_VISORES = 100  # TODO: Poner infinito vs parametro
-SERVER_IP = 'localhost'
-LOGGER_PORT = 5003
-CLOCK_PORT = 5001
-
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
 
@@ -33,7 +29,7 @@ def sendLog(nivel, accion):
     # Envio
     loggerConnection = socket.socket(
         family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect((SERVER_IP, LOGGER_PORT))
+    loggerConnection.connect((os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
     loggerConnection.send(msg)
     loggerConnection.close()
 

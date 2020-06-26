@@ -3,16 +3,11 @@ import logging
 import os
 import socket
 import pickle
+import settings
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
-
-# Declaracion de variables
-SERVER_IP = 'localhost'
-SERVER_PORT = 5000
-CLOCK_PORT = 5001
-LOGGER_PORT = 5003
 
 
 def sendLog(nivel, accion):
@@ -23,50 +18,48 @@ def sendLog(nivel, accion):
     # Envio
     loggerConnection = socket.socket(
         family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect((SERVER_IP, LOGGER_PORT))
+    loggerConnection.connect(
+        (os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
     loggerConnection.send(msg)
     loggerConnection.close()
 
 
 def main():
-    logging.info('process id: %s', str(os.getpid()))
     while True:
         try:
-            # Conexion con el server
-            desc = socket.socket(family=socket.AF_INET,
-                                 type=socket.SOCK_STREAM)
-            desc.connect((SERVER_IP, SERVER_PORT))
-
             # Menu y generacion de la peticion
             peticion = menu()
 
             # Si viene false (salir) termina el bucle
             if not peticion:
-                # Termina la conexion
-                desc.close()
                 break
+
+            # Conexion con el server
+            desc = socket.socket(family=socket.AF_INET,
+                                 type=socket.SOCK_STREAM)
+            desc.connect(
+                (os.getenv("SERVER_IP"), int(os.getenv("SERVER_PORT"))))
 
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
             desc.send(response)
-            sendLog('info', 'Envio de peticion')
-
-            # Muestra la respuesta recibida
             leido = desc.recv(2048)
-            oLeido = pickle.loads(leido)
-            print(oLeido)
-            sendLog('info', 'Respuesta recibida')
+
             # Termina la conexion
             desc.close()
+
+            # Muestra la respuesta recibida
+            oLeido = pickle.loads(leido)
+            print(oLeido)
         except Exception as ex:
-            print(ex)
+            sendLog('error', 'Error: ' + str(ex))
             try:
                 input("Presiona enter para volver a intentar")
             except SyntaxError:
                 pass
+    # Termina la conexion
+    desc.close()
     print("Hasta luego")
-    logging.info('Fin del lector')
-
 
 def pedirOpcion():
     correcto = False
@@ -105,18 +98,18 @@ def setPeticion(tipo):
     print("Ingrese su clave: ")
     clave = input()
 
-
     # Solicitud al clock de horario
     try:
         clockConnection = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_STREAM)
-        clockConnection.connect((SERVER_IP, CLOCK_PORT))
+        clockConnection.connect(
+            (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
         clockConnection.send(str(1))
         response = clockConnection.recv(2048)
         time = pickle.loads(response)
         clockConnection.close()
         return (0, dni, clave, tipo, time)
-    except Exception  as ex:
+    except Exception as ex:
         print(ex)
 
 
