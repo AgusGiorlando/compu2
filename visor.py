@@ -49,7 +49,6 @@ def main():
             except SyntaxError:
                 pass
     # Termina la conexion
-    desc.close()
     print("Hasta luego")
 
 def pedirOpcion():
@@ -102,6 +101,7 @@ def setPeticion(tipo):
         return (0, dni, clave, tipo, time)
     except Exception as ex:
         logger_helper.sendLog('Visor','error', str(ex))
+        print("No se pudo conectar")
 
 
 if __name__ == "__main__":

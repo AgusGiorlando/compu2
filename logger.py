@@ -41,8 +41,8 @@ class Logger:
                 break
 
             time = self.getTime()
-            #time = (0,1,2,3)
             queue.put([msg, time])
+
         print("Fin bucle")
 
     def getTime(self, ):
@@ -82,6 +82,7 @@ class Logger:
                     raise Exception(
                         "El tiempo recibido no es valido" + str(newLog))
 
+
                 # Formateo del log                        
                 fecha = str(time[0]) + '/' + str(time[1])
                 hora = str(time[2]) + ':' + str(time[3])
@@ -96,6 +97,13 @@ class Logger:
                 # Abre y escribe en el archivo
                 file = open('logs/log.txt', 'a')
                 file.write(log)
+
+                # Aviso de conexion al Clock
+                if time == (0,0,0,0):
+                    file.write('[ERROR] - No hay conexion con el Clock')
+                    raise Exception(
+                        "[ERROR] - No hay conexion con el Clock")
+
                 file.close()
             except Exception as ex:
                 print(str(ex))
