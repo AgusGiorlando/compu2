@@ -17,7 +17,6 @@ showTable = False
 headers = []
 logger_helper = LoggerHelper()
 
-
 def main():
     while True:
         try:
@@ -47,6 +46,8 @@ def main():
 
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
+            logger_helper.sendLog('dashboard', 'error', 'Peticion')
+
             try:
                 desc.send(response)
             except socket.error as err:

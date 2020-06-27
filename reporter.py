@@ -9,6 +9,7 @@ import threading
 import pickle
 import multiprocessing
 import settings
+from utils.loggerHelper import LoggerHelper
 
 from controllers.movimientoController import MovimientoController
 from controllers.empleadoController import EmpleadoController
@@ -20,21 +21,10 @@ logging.basicConfig(level=logging.INFO,
 # Declaracion de variables
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
-
-def sendLog(nivel, accion):
-    # Generacion del mensaje
-    msg = (os.getppid(), 'Reporter', nivel, accion)
-    msg = pickle.dumps(msg)
-
-    # Envio
-    loggerConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect((os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
-    loggerConnection.send(msg)
-    loggerConnection.close()
+logger_helper = LoggerHelper()
 
 def createReport(mes, dia):
-    sendLog('info', 'Iniciando reporter')
+    logger_helper.sendLog('reporter', 'info', 'Iniciando reporter')
     fecha = str(dia).zfill(2)+ '/' + str(mes).zfill(2)
     file_name = str(dia).zfill(2)+ '-' + str(mes).zfill(2)
     file_path = 'reports/' + file_name + '.txt'
@@ -59,7 +49,7 @@ def createReport(mes, dia):
             registro = empleado[3] + ', ' + empleado[2] + '\t\t' + str(total_horas).zfill(2) + ':' + str(total_minutos).zfill(2) + '\n'
         file.write(registro)
     file.close()
-    sendLog('info', 'Reporte Completo')
+    logger_helper.sendLog('reporter','info', 'Reporte Completo')
 
 if __name__ == "__main__":
     createReport(str(1).zfill(2), str(1).zfill(2))

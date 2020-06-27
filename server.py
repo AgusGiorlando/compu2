@@ -31,6 +31,7 @@ def processPeticion(oLeido, newdesc):
     Recibe una peticion
     Identifica a que controller debe llamar y devuelve una respuesta
     """
+    logger_helper.sendLog('server', 'error', 'Nueva peticion')
     try:
         # Peticion de un Lector
         if oLeido[0] == 0:

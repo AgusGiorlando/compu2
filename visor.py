@@ -4,24 +4,15 @@ import os
 import socket
 import pickle
 import settings
+from utils.loggerHelper import LoggerHelper
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
+# Declaracion de variables
+logger_helper = LoggerHelper()
 
-def sendLog(nivel, accion):
-    # Generacion del mensaje
-    msg = (os.getppid(), 'Visor', nivel, accion)
-    msg = pickle.dumps(msg)
-
-    # Envio
-    loggerConnection = socket.socket(
-        family=socket.AF_INET, type=socket.SOCK_STREAM)
-    loggerConnection.connect(
-        (os.getenv("SERVER_IP"), int(os.getenv("LOGGER_PORT"))))
-    loggerConnection.send(msg)
-    loggerConnection.close()
 
 
 def main():
@@ -52,7 +43,7 @@ def main():
             oLeido = pickle.loads(leido)
             print(oLeido)
         except Exception as ex:
-            sendLog('error', 'Error: ' + str(ex))
+            logger_helper.sendLog('Visor','error', 'Error: ' + str(ex))
             try:
                 input("Presiona enter para volver a intentar")
             except SyntaxError:
@@ -110,7 +101,7 @@ def setPeticion(tipo):
         clockConnection.close()
         return (0, dni, clave, tipo, time)
     except Exception as ex:
-        print(ex)
+        logger_helper.sendLog('Visor','error', str(ex))
 
 
 if __name__ == "__main__":
