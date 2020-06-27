@@ -8,6 +8,7 @@ import pickle
 import multiprocessing
 import os
 from utils.loggerHelper import LoggerHelper
+from utils.clockHelper import ClockHelper
 from logger import Logger
 from controllers.movimientoController import MovimientoController
 from controllers.empleadoController import EmpleadoController
@@ -18,12 +19,11 @@ import settings
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
-logging.info('Inicio del server')
-
 # Declaracion de variables
 movimiento_controller = MovimientoController()
 empleado_controller = EmpleadoController()
 logger_helper = LoggerHelper()
+clock_helper = ClockHelper()
 terminate = False
 
 def processPeticion(oLeido, newdesc):
@@ -31,7 +31,6 @@ def processPeticion(oLeido, newdesc):
     Recibe una peticion
     Identifica a que controller debe llamar y devuelve una respuesta
     """
-    logger_helper.sendLog('server', 'error', 'Nueva peticion')
     try:
         # Peticion de un Lector
         if oLeido[0] == 0:
@@ -72,7 +71,7 @@ def service():
         logger_helper.sendLog('server', 'error', 'Error al crear socket: ' + str(err))
         print('Error al crear socket: ' + str(err))
         try:
-            input("Presiona enter para volver a intentar")
+            input("Presiona enter para volver a intentar\n")
         except SyntaxError:
             return
 
@@ -145,51 +144,17 @@ def menu():
             salir = True
             return False
         else:
-            print("Ingrese un numero entre 1 y 3")
+            print("Ingrese un numero\n")
 
 
 def getHora():
     try:
-        clockConnection = socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_STREAM)
-    except socket.error as err:
-        logger_helper.sendLog('server', 'error','Error al crear socket: ' + str(err))
-        print('Error al crear socket: ' + str(err))
-        try:
-            input("Presiona enter para volver a intentar")
-        except SyntaxError:
-            return
-    try:
-        clockConnection.connect(
-            (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
-    except socket.gaierror as err:
-        logger_helper.sendLog('server', 'error','Error de ruta: ' + str(err))
-        print('Error de ruta: ' + str(err))
-        return
-    except socket.error as err:
-        logger_helper.sendLog('server', 'error', 'Error de conexion: ' + str(err))
-        print('Error de conexion: ' + str(err))
-        return
-    try:
-        clockConnection.send(str(1))
-    except socket.error as err:
-        logger_helper.sendLog('server', 'error',  'Error de envio: ' + str(err))
-        print('Error de envio: ' + str(err))
-        return
-    try:
-        response = clockConnection.recv(2048)
-    except socket.error as err:
-        logger_helper.sendLog('server', 'error',  'Error de recepcion: ' + str(err))
-        print('Error de recepcion: ' + str(err))
-    if not len(response):
-        logger_helper.sendLog('server', 'warning', 'No se recibio ningun objeto')
-        return
+        time = clock_helper.getHora()
+        print(str(time[0]) + '/' + str(time[1]) +
+              ' - ' + str(time[2]) + ':' + str(time[3]))
+    except Exception  as ex:
+        logger_helper.sendLog('Server', 'Error', 'Clock - ' + str(ex))
 
-    time = pickle.loads(response)
-    clockConnection.close()
-
-    print(str(time[0]) + '/' + str(time[1]) +
-          ' - ' + str(time[2]) + ':' + str(time[3]))
 
 
 def main():
