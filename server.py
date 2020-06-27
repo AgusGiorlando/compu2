@@ -31,6 +31,7 @@ def processPeticion(oLeido, newdesc):
     Recibe una peticion
     Identifica a que controller debe llamar y devuelve una respuesta
     """
+    logger_helper.sendLog('server', 'error', 'Nueva peticion')
     try:
         # Peticion de un Lector
         if oLeido[0] == 0:
@@ -123,7 +124,7 @@ def pedirOpcion():
     num = 0
     while(not correcto):
         try:
-            num = input("Elige una opcion: ")
+            num = input("Elige una opcion: \n")
             correcto = True
         except ValueError:
             print('Error, la opcion ingresada no es valida')
@@ -138,7 +139,8 @@ def menu():
         print("0. Salir")
         opcion = pedirOpcion()
         if opcion == 1:
-            return getHora()
+            getHora()
+            return True
         elif opcion == 0:
             salir = True
             return False

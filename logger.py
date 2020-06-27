@@ -17,7 +17,6 @@ logging.basicConfig(level=logging.INFO,
 # Declaracion de variables
 queue = multiprocessing.Queue()
 
-
 class Logger:
     def connect(self,):
         # Writer
@@ -36,14 +35,15 @@ class Logger:
 
             msg = clientSocket.recv(2048)
             msg = pickle.loads(msg)
-            print(msg)
-            if msg[3] == 'terminate':
+            if msg[2] == 'terminate':
                 writer.terminate()
                 writer.join()
                 break
 
             time = self.getTime()
             queue.put([msg, time])
+
+        print("Fin bucle")
 
     def getTime(self, ):
         try:
@@ -73,7 +73,7 @@ class Logger:
                         "El objeto recibido no es valido" + str(newLog))
 
                 msg = newLog[0]
-                if len(msg) != 4:
+                if len(msg) != 3:
                     raise Exception(
                         "El mensaje recibido no es valido" + str(newLog))
 
@@ -82,21 +82,28 @@ class Logger:
                     raise Exception(
                         "El tiempo recibido no es valido" + str(newLog))
 
+
                 # Formateo del log                        
                 fecha = str(time[0]) + '/' + str(time[1])
                 hora = str(time[2]) + ':' + str(time[3])
-                log = str.format('[{0}] ({1} - {2}) - {3}-{4} - {5}\n',
-                                 str.upper(msg[2]),
-                                 msg[1],
+                log = str.format('[{0}] ({1}) - {2}-{3} - {4}\n',
+                                 str.upper(msg[1]),
                                  msg[0],
                                  fecha,
                                  hora,
-                                 msg[3]
+                                 msg[2]
                                  )
                 
                 # Abre y escribe en el archivo
                 file = open('logs/log.txt', 'a')
                 file.write(log)
+
+                # Aviso de conexion al Clock
+                if time == (0,0,0,0):
+                    file.write('[ERROR] - No hay conexion con el Clock')
+                    raise Exception(
+                        "[ERROR] - No hay conexion con el Clock")
+
                 file.close()
             except Exception as ex:
                 print(str(ex))
