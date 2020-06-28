@@ -5,6 +5,7 @@ import socket
 import pickle
 import settings
 from utils.loggerHelper import LoggerHelper
+from utils.clockHelper import ClockHelper
 
 # Configuracion del login
 logging.basicConfig(level=logging.INFO,
@@ -12,12 +13,12 @@ logging.basicConfig(level=logging.INFO,
 
 # Declaracion de variables
 logger_helper = LoggerHelper()
-
-
+clock_helper = ClockHelper()
 
 def main():
     while True:
         try:
+            
             # Menu y generacion de la peticion
             peticion = menu()
 
@@ -88,20 +89,13 @@ def setPeticion(tipo):
     print("Ingrese su clave: ")
     clave = input()
 
-    # Solicitud al clock de horario
     try:
-        clockConnection = socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_STREAM)
-        clockConnection.connect(
-            (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
-        clockConnection.send(str(1))
-        response = clockConnection.recv(2048)
-        time = pickle.loads(response)
-        clockConnection.close()
+        time = clock_helper.getHora()
         return (0, dni, clave, tipo, time)
-    except Exception as ex:
-        logger_helper.sendLog('Visor','error', str(ex))
-        print("No se pudo conectar")
+    except Exception  as ex:
+        logger_helper.sendLog('Visor', 'Error', 'Clock - ' + str(ex))
+        print('No se pudo conectar al clock')
+
 
 
 if __name__ == "__main__":

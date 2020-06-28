@@ -9,6 +9,7 @@ import threading
 import pickle
 import multiprocessing
 import settings
+from utils.clockHelper import ClockHelper
 
 # Configuracion del logging
 logging.basicConfig(level=logging.INFO,
@@ -16,6 +17,7 @@ logging.basicConfig(level=logging.INFO,
 
 # Declaracion de variables
 queue = multiprocessing.Queue()
+clock_helper = ClockHelper()
 
 class Logger:
     def connect(self,):
@@ -47,15 +49,7 @@ class Logger:
 
     def getTime(self, ):
         try:
-            # Solicitud al clock de horario
-            clockConnection = socket.socket(
-                family=socket.AF_INET, type=socket.SOCK_STREAM)
-            clockConnection.connect(
-                (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
-            clockConnection.send(str(1))
-            response = clockConnection.recv(2048)
-            time = pickle.loads(response)
-            clockConnection.close()
+            time = clock_helper.getHora()
             return time
         except:
             return (0,0,0,0)
@@ -100,7 +94,7 @@ class Logger:
 
                 # Aviso de conexion al Clock
                 if time == (0,0,0,0):
-                    file.write('[ERROR] - No hay conexion con el Clock')
+                    file.write('[ERROR] - No hay conexion con el Clock\n')
                     raise Exception(
                         "[ERROR] - No hay conexion con el Clock")
 
