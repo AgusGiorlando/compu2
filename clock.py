@@ -9,6 +9,7 @@ import multiprocessing
 import pickle
 import reporter
 import settings
+import argparse
 
 # Declaracion de variables
 hora = 0
@@ -16,6 +17,8 @@ minuto = 0
 mes = 0
 dia = 0
 terminate = False
+port = os.getenv("VISOR_PORT")
+args = []
 
 
 def clock():
@@ -57,8 +60,8 @@ def clock():
 
 
 def getFecha():
-    global hora, minuto, mes, dia  # Informa que se refiere a las variables globales
-    return (mes, dia, str(hora).zfill(2), str(minuto).zfill(2))
+    global hora, minuto, mes, dia, port  # Informa que se refiere a las variables globales
+    return (dia, mes, str(hora).zfill(2), str(minuto).zfill(2))
 
 
 def connect():
@@ -66,7 +69,7 @@ def connect():
     desc = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
     # para que no diga address already in use ...
     desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    desc.bind((os.getenv("SERVER_IP"), int(os.getenv("VISOR_PORT"))))
+    desc.bind((os.getenv("SERVER_IP"), int(port)))
     desc.listen(100 + 1)
 
     # Espera infinita de nuevos lectores
@@ -87,14 +90,25 @@ def connect():
 def checkHourAndStartReporter():
     global hora, minuto, mes, dia
     if hora == 23 and minuto == 30:
-        print('Inicia reporter')
         reporterProcess = multiprocessing.Process(
             target=reporter.createReport, args=(mes, dia))
         reporterProcess.start()
 
 
 def main():
-    global terminate
+    global terminate, args, port
+    print(os.getpid())
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-cp', metavar='N', type=int, nargs='+',
+                        help='an integer for the accumulator', default=0)
+
+    args = parser.parse_args()
+    print(args.cp)
+
+    if args.cp != 0:
+        port = args.cp[0]
+
+
     clockThread = threading.Thread(name='clock', target=clock)
     connectThread = threading.Thread(name='connect', target=connect)
 

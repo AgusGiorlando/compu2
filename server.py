@@ -12,6 +12,7 @@ from logger import Logger
 from controllers.movimientoController import MovimientoController
 from controllers.empleadoController import EmpleadoController
 import settings
+import argparse
 
 # Declaracion de variables
 movimiento_controller = MovimientoController()
@@ -19,6 +20,8 @@ empleado_controller = EmpleadoController()
 logger_helper = LoggerHelper()
 clock_helper = ClockHelper()
 terminate = False
+port = int(os.getenv('CLOCK_PORT'))
+
 
 def processPeticion(oLeido, newdesc):
     """
@@ -62,7 +65,8 @@ def service():
         # para que no diga address already in use ...
         desc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     except socket.error as err:
-        logger_helper.sendLog('server', 'error', 'Error al crear socket: ' + str(err))
+        logger_helper.sendLog(
+            'server', 'error', 'Error al crear socket: ' + str(err))
         print('Error al crear socket: ' + str(err))
         try:
             input("Presiona enter para volver a intentar\n")
@@ -79,7 +83,8 @@ def service():
             try:
                 leido = newdesc.recv(2048)
             except socket.error as e:
-                logger_helper.sendLog('server', 'error', 'Error al recibir: ' + str(e))
+                logger_helper.sendLog(
+                    'server', 'error', 'Error al recibir: ' + str(e))
                 pass
             oLeido = pickle.loads(leido)
             # Nuevo hilo
@@ -141,16 +146,28 @@ def menu():
 
 
 def getHora():
+    global args, port
     try:
-        time = clock_helper.getHora()
+        time = clock_helper.getHora(port)
         print(str(time[0]) + '/' + str(time[1]) +
               ' - ' + str(time[2]) + ':' + str(time[3]))
-    except Exception  as ex:
+    except Exception as ex:
         logger_helper.sendLog('Server', 'Error', 'Clock - ' + str(ex))
 
 
-
 def main():
+    global port
+    print(os.getpid())
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-cp', metavar='N', type=int, nargs='+',
+                        help='an integer for the accumulator', default=0)
+    args = parser.parse_args()
+    
+    #print(type(args.cp))
+    if args.cp != 0:
+        port = args.cp[0]
+
+
     global terminate
     print('Iniciando servidor...')
     # Inicio del logger
@@ -165,11 +182,11 @@ def main():
 
         serviceThread.start()
         clientThread.start()
+        clientThread.join()
 
         # Terminacion de hilos
-        clientThread.join()
         print('Cliente terminado')
-        
+
         # Modifica el flag y espera a que termine el servicio
         terminate = True
         serviceThread.join()

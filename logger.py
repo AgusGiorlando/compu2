@@ -40,8 +40,6 @@ class Logger:
             time = self.getTime()
             queue.put([msg, time])
 
-        print("Fin bucle")
-
     def getTime(self, ):
         try:
             time = clock_helper.getHora()

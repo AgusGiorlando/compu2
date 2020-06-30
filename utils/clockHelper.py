@@ -8,7 +8,8 @@ import settings
 
 
 class ClockHelper:
-    def getHora(self, ):
+    def getHora(self, clockPort):
+        print(type(clockPort))
         try:
             clockConnection = socket.socket(
                 family=socket.AF_INET, type=socket.SOCK_STREAM)
@@ -17,7 +18,7 @@ class ClockHelper:
 
         try:
             clockConnection.connect(
-                (os.getenv("SERVER_IP"), int(os.getenv("CLOCK_PORT"))))
+                (os.getenv("SERVER_IP"), clockPort))
         except socket.gaierror as e:
             raise Exception('Error de ruta: ' + str(e))
         except socket.error as e:
