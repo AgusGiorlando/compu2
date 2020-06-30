@@ -3,17 +3,12 @@
 
 import time
 import os
-import logging
 import socket
 import threading
 import pickle
 import multiprocessing
 import settings
 from utils.clockHelper import ClockHelper
-
-# Configuracion del logging
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
 queue = multiprocessing.Queue()

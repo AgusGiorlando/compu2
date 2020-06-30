@@ -1,13 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging
 from config.database import Database
-
-# Configuracion del login
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
-
 
 class Empleado:
 
@@ -22,12 +16,9 @@ class Empleado:
             connection['cursor'].execute(query)
             empleados = connection['cursor'].fetchall()
             connection['db'].commit()
-            logging.info(
-                str(connection['cursor'].rowcount) + " Empleados encontrados")
             return empleados
         finally:
             database.closeConnection()
-        # TODO: Manejo de excepciones
 
     def selectByDni(self, dni):
         """
@@ -57,8 +48,6 @@ class Empleado:
             values = (str(dni), nombre, apellido, clave)
             connection['cursor'].execute(query, values)
             connection['db'].commit()
-            logging.info(
-                str(connection['cursor'].rowcount) + " Empleado registrado")
             return True
         except Exception as ex:
             print(ex)
@@ -78,7 +67,7 @@ class Empleado:
             connection['db'].commit()
             return True
         except Exception as ex:
-            print(ex)
+            print(str(ex))
         finally:
             database.closeConnection()
 
@@ -95,6 +84,6 @@ class Empleado:
             connection['db'].commit()
             return True
         except Exception as ex:
-            print(ex)
+            print(str(ex))
         finally:
             database.closeConnection()

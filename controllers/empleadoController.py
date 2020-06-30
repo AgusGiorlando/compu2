@@ -4,11 +4,6 @@
 import logging
 from models.empleado import Empleado
 
-
-# Configuracion del login
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
-
 # Declaracion de variables
 empleado = Empleado()
 
@@ -28,7 +23,7 @@ class EmpleadoController:
                 return 'El DNI ingresado es incorrecto'
             return result
         except Exception as ex:
-            print(ex)
+            return str(ex)
 
     """
     Devuelve todos los empleados
@@ -40,7 +35,7 @@ class EmpleadoController:
             empleados = empleado.selectAll()
             return empleados
         except Exception as ex:
-            print(ex)
+            return str(ex)
 
     """
     Crea un nuevo empleado

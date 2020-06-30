@@ -1,13 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging
 from config.database import Database
-
-# Configuracion del login
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
-
 
 class Movimiento:
     def insert(self, id_empleado, tipo, fecha, hora):
@@ -23,10 +17,9 @@ class Movimiento:
             values = (id_empleado, tipo, fecha, hora)
             connection['cursor'].execute(query, values)
             connection['db'].commit()
-            logging.info(str(connection['cursor'].rowcount) + " Movimiento registrado")
             return True
         except Exception as ex:
-            print(ex)
+            print(str(ex))
         finally:
             database.closeConnection()
 
@@ -41,10 +34,9 @@ class Movimiento:
             connection['cursor'].execute(query)
             movimientos = connection['cursor'].fetchall()
             connection['db'].commit()
-            logging.info(str(connection['cursor'].rowcount) + " Movimientos encontrados")
             return movimientos
         except Exception as ex:
-            print(ex)            
+            print(str(ex))            
         finally:
             database.closeConnection()
 
@@ -61,6 +53,6 @@ class Movimiento:
             movimientos = connection['cursor'].fetchall()
             return movimientos
         except Exception as ex:
-            print(ex)
+            print(str(ex))
         finally:
             database.closeConnection()

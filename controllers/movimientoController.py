@@ -5,10 +5,6 @@ import logging
 from models.movimiento import Movimiento
 from empleadoController import EmpleadoController
 
-# Configuracion del login
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
-
 # Declaracion de variables
 movimiento = Movimiento()
 empleadoController = EmpleadoController()
@@ -47,7 +43,7 @@ class MovimientoController:
             
             return 'Movimiento registrado correctamente'
         except Exception as ex:
-            print(ex)
+            print(str(ex))
 
     def getMovimientos(self, ):
         """
@@ -58,7 +54,7 @@ class MovimientoController:
             movimientos = movimiento.selectAll()
             return movimientos
         except Exception as ex:
-            print(ex)
+            print(str(ex))
 
     def getMovimientosByFechaAndEmpleado(self, fecha, id_empleado):
         """
@@ -69,4 +65,4 @@ class MovimientoController:
                 fecha, id_empleado)
             return movimientos
         except Exception as ex:
-            print(ex)
+            print(str(ex))

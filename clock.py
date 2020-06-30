@@ -3,17 +3,12 @@
 
 import time
 import os
-import logging
 import socket
 import threading
 import multiprocessing
 import pickle
 import reporter
 import settings
-
-# Configuracion del logging
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
 hora = 0
@@ -77,7 +72,6 @@ def connect():
     # Espera infinita de nuevos lectores
     while True:
         clientSocket, cli = desc.accept()
-        logging.info(cli)
         leido = clientSocket.recv(2048)
         try:
             if leido != '1':
@@ -101,7 +95,6 @@ def checkHourAndStartReporter():
 
 def main():
     global terminate
-    logging.info('Inicio del clock')
     clockThread = threading.Thread(name='clock', target=clock)
     connectThread = threading.Thread(name='connect', target=connect)
 

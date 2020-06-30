@@ -1,15 +1,10 @@
 #!/usr/bin/python3
-import logging
 import os
 import socket
 import pickle
 import settings
 from utils.loggerHelper import LoggerHelper
 from utils.clockHelper import ClockHelper
-
-# Configuracion del login
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
 logger_helper = LoggerHelper()

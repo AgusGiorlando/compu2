@@ -1,16 +1,11 @@
 #!/usr/bin/python3
 
-import logging
 import os
 import socket
 import pickle
 import settings
 from utils.loggerHelper import LoggerHelper
 from tabulate import tabulate
-
-# Configuracion del login
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
 showTable = False
@@ -46,8 +41,6 @@ def main():
 
             # Formatea y envia la Peticion
             response = pickle.dumps(peticion)
-            logger_helper.sendLog('dashboard', 'error', 'Peticion')
-
             try:
                 desc.send(response)
             except socket.error as err:

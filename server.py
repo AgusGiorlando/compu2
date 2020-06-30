@@ -3,7 +3,6 @@
 
 import socket
 import threading
-import logging
 import pickle
 import multiprocessing
 import os
@@ -13,11 +12,6 @@ from logger import Logger
 from controllers.movimientoController import MovimientoController
 from controllers.empleadoController import EmpleadoController
 import settings
-
-
-# Configuracion del logging
-logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
 
 # Declaracion de variables
 movimiento_controller = MovimientoController()
@@ -82,7 +76,6 @@ def service():
     while True:
         try:
             newdesc, cli = desc.accept()
-            logging.info(cli)
             try:
                 leido = newdesc.recv(2048)
             except socket.error as e:
@@ -173,15 +166,20 @@ def main():
         serviceThread.start()
         clientThread.start()
 
-        # Terminacion de hiloss
+        # Terminacion de hilos
         clientThread.join()
         print('Cliente terminado')
+        
+        # Modifica el flag y espera a que termine el servicio
         terminate = True
         serviceThread.join()
         print('Servicio terminado')
+
+        # Manda señal al logger para que se termine y espera
         logger_helper.sendLog('server', 'info', 'terminate')
         loggerProcess.join()
         print('Logger terminado')
+
         print('Hasta luego')
     except Exception as ex:
         print(str(ex))
